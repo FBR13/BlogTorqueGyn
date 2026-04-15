@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
+
 import { LogOut, Plus, Settings, X, Save, Trash2, UploadCloud, Image as ImageIcon, FileText } from 'lucide-react';
 
 const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi'];
 
 export function Admin() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
 
   // Controle de Abas
   const [activeTab, setActiveTab] = useState<'posts' | 'portfolio'>('posts');
