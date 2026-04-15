@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LogIn, Menu, X } from 'lucide-react';
+import { LogIn, Menu, X, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../context/AuthContext'; // <-- Conectando o cérebro aqui!
 
 export function Header() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Puxamos o "user" para saber se a pessoa está logada
+  const { user } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
 
@@ -53,14 +57,27 @@ export function Header() {
           ))}
         </nav>
 
+        {/* =========================================
+            AÇÕES DESKTOP (Muda se estiver logado)
+            ========================================= */}
         <div className="hidden md:flex items-center gap-6">
-          <Link
-            to="/login"
-            className="flex items-center gap-4 text-[10px] font-display font-bold tracking-[0.2em] uppercase border border-white/20 bg-white/5 px-6 py-3 hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all duration-500 group"
-          >
-            <span>Acesso Restrito</span>
-            <LogIn size={14} strokeWidth={1.5} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </Link>
+          {user ? (
+            <Link
+              to="/admin"
+              className="flex items-center gap-4 text-[10px] font-display font-bold tracking-[0.2em] uppercase border border-neon-cyan/50 bg-neon-cyan/5 text-neon-cyan px-6 py-3 hover:bg-neon-cyan hover:text-black transition-all duration-500 group"
+            >
+              <span>Painel Admin</span>
+              <LayoutDashboard size={14} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-300" />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="flex items-center gap-4 text-[10px] font-display font-bold tracking-[0.2em] uppercase border border-white/20 bg-white/5 px-6 py-3 hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all duration-500 group"
+            >
+              <span>Acesso Restrito</span>
+              <LogIn size={14} strokeWidth={1.5} className="group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
+          )}
         </div>
 
         {/* =========================================
@@ -98,14 +115,26 @@ export function Header() {
           ))}
         </div>
 
-        <Link
-          to="/login"
-          onClick={() => setIsMobileMenuOpen(false)}
-          className="mt-8 flex items-center justify-center gap-4 text-xs font-display font-bold tracking-[0.2em] uppercase border border-neon-red/50 bg-neon-red/10 text-neon-red px-10 py-5 w-[80%] hover:bg-neon-red hover:text-white transition-all"
-        >
-          <span>Acesso Restrito</span>
-          <LogIn size={16} />
-        </Link>
+        {/* Ações Mobile: Muda se estiver logado */}
+        {user ? (
+          <Link
+            to="/admin"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="mt-8 flex items-center justify-center gap-4 text-xs font-display font-bold tracking-[0.2em] uppercase border border-neon-cyan/50 bg-neon-cyan/10 text-neon-cyan px-10 py-5 w-[80%] hover:bg-neon-cyan hover:text-black transition-all"
+          >
+            <span>Painel Admin</span>
+            <LayoutDashboard size={16} />
+          </Link>
+        ) : (
+          <Link
+            to="/login"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="mt-8 flex items-center justify-center gap-4 text-xs font-display font-bold tracking-[0.2em] uppercase border border-neon-red/50 bg-neon-red/10 text-neon-red px-10 py-5 w-[80%] hover:bg-neon-red hover:text-white transition-all"
+          >
+            <span>Acesso Restrito</span>
+            <LogIn size={16} />
+          </Link>
+        )}
       </div>
     </header>
   );
