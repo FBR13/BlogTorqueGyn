@@ -7,7 +7,8 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// CORS liberado para garantir que a Vercel consiga ler a API sem bloqueios
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const supabase = createClient(
@@ -15,12 +16,32 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_KEY
 );
 
+// Rota Raiz (Para você testar clicando no link do Render)
+app.get('/', (req, res) => {
+    res.send('<h1>Motor do TorqueGyn está online e roncando alto! 🏎️💨</h1><p>Acesse /api/health para status.</p>');
+});
+
 // 1. Rota de Health Check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'TorqueGyn API is running! 🏎️💨' });
 });
 
-// 2. Rota Oficial de Posts (A que o Frontend está chamando agora!)
+// 🚨 A ROTA QUE FALTAVA: Buscar TODOS os posts (Para alimentar a Home e o Blog)
+app.get('/api/posts', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Buscar APENAS UM post detalhado (Para ler a matéria completa)
 app.get('/api/posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -28,7 +49,7 @@ app.get('/api/posts/:id', async (req, res) => {
       .from('posts')
       .select('*')
       .eq('id', id)
-      .single(); // Garante que retorne apenas 1 objeto, não um array
+      .single(); // Garante que retorne apenas 1 objeto
 
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Matéria não encontrada' });
@@ -39,16 +60,13 @@ app.get('/api/posts/:id', async (req, res) => {
   }
 });
 
-// 3. Rota para Criar um Post (Usaremos no painel Admin depois)
+// Criar um Post (Painel Admin)
 app.post('/api/posts', async (req, res) => {
     try {
         const { title, description, content, image_url, brand } = req.body;
-
         const { data, error } = await supabase
             .from('posts')
-            .insert([
-                { title, description, content, image_url, brand }
-            ])
+            .insert([{ title, description, content, image_url, brand }])
             .select();
 
         if (error) throw error;
@@ -58,19 +76,14 @@ app.post('/api/posts', async (req, res) => {
     }
 });
 
+// Deletar um Post
 app.delete('/api/posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const { error } = await supabase
-      .from('posts')
-      .delete()
-      .eq('id', id);
-
+    const { error } = await supabase.from('posts').delete().eq('id', id);
     if (error) throw error;
     res.json({ message: 'Editorial removido do acervo.' });
   } catch (error) {
-    console.error("Erro ao deletar:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -85,7 +98,6 @@ app.get('/api/portfolio', async (req, res) => {
   }
 });
 
-// Criar item no Portfólio
 app.post('/api/portfolio', async (req, res) => {
   try {
     const { title, description, images, brand } = req.body;
@@ -97,7 +109,6 @@ app.post('/api/portfolio', async (req, res) => {
   }
 });
 
-// Deletar item do Portfólio
 app.delete('/api/portfolio/:id', async (req, res) => {
   try {
     const { id } = req.params;
