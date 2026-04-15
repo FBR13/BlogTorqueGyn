@@ -13,7 +13,9 @@ export function Admin() {
   const [isCreating, setIsCreating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Agora é um ARRAY de arquivos (permite múltiplas imagens)
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({ title: '', brand: BRANDS[0], description: '', content: '' });
 
@@ -29,23 +31,30 @@ export function Admin() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile) { setMessage('Erro: A fotografia de capa é obrigatória.'); return; }
+    if (imageFiles.length === 0) { setMessage('Erro: A fotografia é obrigatória.'); return; }
 
     setIsSubmitting(true);
-    setMessage('Sincronizando mídia...');
+    setMessage('Sincronizando mídia(s) no servidor...');
 
     try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${activeTab}/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('editoriais').upload(fileName, imageFile);
-      if (uploadError) throw uploadError;
+      let finalImageUrls: string[] = [];
 
-      const { data: publicUrlData } = supabase.storage.from('editoriais').getPublicUrl(fileName);
-      const finalImageUrl = publicUrlData.publicUrl;
+      // Loop mágico: Sobe quantas imagens você tiver selecionado
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${activeTab}/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
 
+        const { error: uploadError } = await supabase.storage.from('editoriais').upload(fileName, file);
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage.from('editoriais').getPublicUrl(fileName);
+        finalImageUrls.push(publicUrlData.publicUrl);
+      }
+
+      // Prepara o pacote (Post recebe 1 imagem, Portfólio recebe a lista toda)
       let payload = activeTab === 'posts'
-        ? { ...formData, image_url: finalImageUrl }
-        : { title: formData.title, brand: formData.brand, description: formData.description, images: [finalImageUrl] };
+        ? { ...formData, image_url: finalImageUrls[0] }
+        : { title: formData.title, brand: formData.brand, description: formData.description, images: finalImageUrls };
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/${activeTab}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
@@ -55,7 +64,7 @@ export function Admin() {
 
       setMessage('Sincronização concluída com sucesso!');
       setTimeout(() => {
-        setIsCreating(false); setMessage(''); setFormData({ title: '', brand: BRANDS[0], description: '', content: '' }); setImageFile(null);
+        setIsCreating(false); setMessage(''); setFormData({ title: '', brand: BRANDS[0], description: '', content: '' }); setImageFiles([]);
       }, 2000);
 
     } catch (error) { console.error(error); setMessage('Erro crítico de conexão.'); } finally { setIsSubmitting(false); }
@@ -129,9 +138,7 @@ export function Admin() {
           </>
         ) : (
           <div className="bg-white border border-gray-200 p-6 md:p-16 relative">
-            <button onClick={() => setIsCreating(false)} className="absolute top-4 right-4 md:top-8 md:right-8 text-gray-400 hover:text-black transition-colors p-2">
-              <X className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
-            </button>
+            <button onClick={() => setIsCreating(false)} className="absolute top-4 right-4 md:top-8 md:right-8 text-gray-400 hover:text-black transition-colors p-2"><X className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} /></button>
             <div className="mb-8 md:mb-12 pt-6 md:pt-0">
               <span className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-[#EF3340] font-bold mb-3 md:mb-4 block">{activeTab === 'posts' ? 'Redação Editorial' : 'Curadoria Visual'}</span>
               <h2 className="text-3xl md:text-5xl font-luxury">Nova Publicação</h2>
@@ -151,11 +158,16 @@ export function Admin() {
               </div>
 
               <div className="relative pt-2">
-                <label className="text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-black font-bold mb-4 block border-b border-black pb-2">Fotografia de Capa</label>
+                <label className="text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-black font-bold mb-4 block border-b border-black pb-2">Fotografia (Múltiplas para Portfólio)</label>
                 <div className="mt-4 border-2 border-dashed border-gray-300 p-6 md:p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors relative cursor-pointer text-center">
-                  <input type="file" accept="image/*" onChange={(e) => e.target.files && setImageFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  {/* O atributo MULTIPLE permite selecionar várias fotos segurando o SHIFT/CTRL no PC ou selecionando várias no celular */}
+                  <input type="file" multiple accept="image/*" onChange={(e) => e.target.files && setImageFiles(Array.from(e.target.files))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                   <UploadCloud size={28} className="text-gray-400 mb-3 md:mb-4" />
-                  <span className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase text-gray-600 px-4">{imageFile ? imageFile.name : 'Toque para selecionar imagem'}</span>
+                  <span className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase text-gray-600 px-4">
+                    {imageFiles.length > 0
+                      ? `${imageFiles.length} arquivo(s) selecionado(s)`
+                      : 'Toque para selecionar imagem (ou imagens)'}
+                  </span>
                 </div>
               </div>
 

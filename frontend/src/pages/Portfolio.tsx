@@ -1,6 +1,73 @@
 import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react'; // <-- Novos ícones importados
 
 interface PortfolioItem { id: string; title: string; description: string; images: string[]; brand: string; }
+
+function ImageCarousel({ images, title }: { images: string[], title: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Sistema de Autoplay (Troca a cada 4 segundos)
+  useEffect(() => {
+    if (!images || images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+
+    return () => clearInterval(interval); // Limpa a memória ao fechar
+  }, [images]);
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  if (!images || images.length === 0) {
+    return <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px] font-display tracking-widest uppercase">Mídia Indisponível</div>;
+  }
+
+  return (
+    <div className="relative w-full h-full group/carousel">
+      {/* Imagem Atual */}
+      <img
+        src={images[currentIndex]}
+        alt={`${title} - vista ${currentIndex + 1}`}
+        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 ease-in-out filter grayscale group-hover:grayscale-0"
+      />
+
+      {/* Controles: Só aparecem se tiver mais de 1 foto */}
+      {images.length > 1 && (
+        <>
+          {/* Setas Laterais (Escondidas até passar o mouse) */}
+          <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-500">
+            <button onClick={prevImage} className="p-3 rounded-full glass-dark bg-black/60 text-white hover:text-neon-cyan hover:border-neon-cyan transition-all hover:scale-110">
+              <ChevronLeft size={20} />
+            </button>
+            <button onClick={nextImage} className="p-3 rounded-full glass-dark bg-black/60 text-white hover:text-neon-cyan hover:border-neon-cyan transition-all hover:scale-110">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+
+          {/* Bolinhas Indicadoras (Rastreador de Posição) */}
+          <div className="absolute bottom-4 left-0 w-full flex justify-center gap-2 z-10">
+            {images.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-1 rounded-full transition-all duration-500 ${idx === currentIndex ? 'bg-neon-cyan w-6 shadow-neon-cyan' : 'bg-white/30 w-2'
+                  }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function Portfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
@@ -52,13 +119,11 @@ export function Portfolio() {
                 </div>
               </div>
 
+              {/* Trocamos a tag <img> estática pelo nosso Carrossel Mágico */}
               <div className="md:col-span-8 overflow-hidden rounded-2xl relative aspect-video border border-white/10 glass-dark hover-glitch">
-                {item.images && item.images.length > 0 ? (
-                  <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[2s] ease-out filter grayscale group-hover:grayscale-0" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px] font-display tracking-widest uppercase">Mídia Indisponível</div>
-                )}
+                <ImageCarousel images={item.images} title={item.title} />
               </div>
+
             </div>
           ))}
         </div>
