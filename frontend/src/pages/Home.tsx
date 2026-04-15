@@ -1,0 +1,155 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Zap, Crosshair } from 'lucide-react';
+
+interface Post {
+  id: string;
+  title: string;
+  brand: string;
+  image_url: string;
+}
+
+export function Home() {
+  const [latestPosts, setLatestPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestPosts = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/posts`);
+        if (response.ok) {
+          const data = await response.json();
+          setLatestPosts(data.slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Erro ao buscar vitrine:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestPosts();
+  }, []);
+
+  return (
+    <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0">
+      
+      {/* =========================================
+          O NOVO FUNDO TEXTURIZADO (FIM DO CHAPADO)
+          ========================================= */}
+      {/* Malha/Grid Tecnológico no fundo */}
+      <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_30%,#000_20%,transparent_100%)] opacity-60"></div>
+      
+      {/* Luz Neon Vermelha Vazando (Alta Rotação) */}
+      <div className="absolute top-[10%] -left-[10%] w-[50vw] h-[50vw] bg-neon-red/15 rounded-full blur-[150px] pointer-events-none -z-10 animate-pulse"></div>
+      
+      {/* Luz Neon Ciano Vazando (Tecnologia) */}
+      <div className="absolute top-[40%] -right-[10%] w-[40vw] h-[40vw] bg-neon-cyan/10 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+
+      {/* =========================================
+          HERO SECTION
+          ========================================= */}
+      <section className="relative flex flex-col justify-center px-6 py-32 min-h-[90vh] border-b border-white/10 overflow-hidden">
+        <div className="container mx-auto relative z-10">
+          <div className="flex items-center gap-4 mb-8 animate-fade-in">
+            <Crosshair size={16} className="text-neon-red animate-spin-slow" />
+            <span className="text-[10px] tracking-[0.4em] font-display font-bold uppercase text-neon-red text-glow-red">
+              Motor Ligado
+            </span>
+          </div>
+
+          <h1 className="text-5xl md:text-[90px] leading-[1.1] text-white mb-8 animate-slide-up">
+            <span className="font-display font-bold tracking-tighter uppercase block text-shadow-xl">
+              A Estética da
+            </span>
+            <span className="font-luxury italic text-gray-400 font-light block transform -translate-y-2">
+              Performance
+            </span>
+            <span className="font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-600">
+              Absoluta.
+            </span>
+          </h1>
+
+          <p className="text-sm md:text-lg text-gray-400 max-w-xl leading-relaxed font-light mb-12 animate-slide-up border-l-2 border-neon-red pl-6" style={{ animationDelay: '0.2s' }}>
+            Documentamos os projetos mais audaciosos e a mecânica de precisão. Onde a engenharia brutal encontra o design de alta costura.
+          </p>
+
+          <div className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+            <Link 
+              to="/blog" 
+              className="inline-flex items-center gap-4 border border-white/20 glass-dark px-10 py-5 text-[11px] font-display font-bold tracking-[0.3em] uppercase hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all duration-500 group bg-black/40"
+            >
+              <Zap size={16} className="group-hover:animate-pulse" />
+              <span>Acessar o Acervo</span>
+              <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================
+          RADAR (ÚLTIMAS MATÉRIAS)
+          ========================================= */}
+      <section className="py-32 px-6 relative z-10">
+        <div className="container mx-auto">
+          
+          <div className="flex items-end justify-between mb-20 border-b border-white/10 pb-6">
+            <div>
+              <span className="text-[10px] tracking-[0.4em] uppercase text-neon-cyan font-display font-bold block mb-4 text-glow-cyan">
+                Radar Digital
+              </span>
+              <h2 className="text-4xl md:text-5xl font-luxury font-light text-white italic">
+                Últimas Publicações
+              </h2>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="text-[10px] tracking-widest uppercase font-display text-gray-500 flex items-center gap-4">
+              <div className="w-2 h-2 bg-neon-red rounded-full animate-ping"></div>
+              Sincronizando banco de dados...
+            </div>
+          ) : latestPosts.length === 0 ? (
+            <div className="text-[10px] tracking-widest uppercase font-display text-gray-500">
+              Nenhuma matéria publicada ainda.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {latestPosts.map((post, index) => (
+                <Link 
+                  key={post.id} 
+                  to={`/blog/${post.id}`} 
+                  className="group block cursor-pointer glass-dark rounded-xl p-4 hover:border-white/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-glass hover-glitch bg-black/60"
+                >
+                  <div className="relative overflow-hidden aspect-[4/5] bg-black mb-6 rounded-lg reveal-image border border-white/5">
+                    <img 
+                      src={post.image_url} 
+                      alt={post.title}
+                      className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-[1.5s] ease-out filter grayscale group-hover:grayscale-0"
+                    />
+                    <div className="absolute top-4 left-4 glass-dark px-3 py-1 rounded-full text-white text-[10px] tracking-[0.3em] font-display font-bold group-hover:text-neon-red transition-colors bg-black/80">
+                      0{index + 1}
+                    </div>
+                  </div>
+                  
+                  <div className="px-2">
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="w-8 h-[1px] bg-neon-red group-hover:w-12 transition-all duration-500" />
+                      <span className="text-[9px] tracking-[0.3em] uppercase font-bold text-gray-400 group-hover:text-neon-red transition-colors">
+                        {post.brand}
+                      </span>
+                    </div>
+                    
+                    <h3 className="text-xl font-display leading-snug text-white group-hover:text-gray-300 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}

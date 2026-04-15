@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;600;900&family=Syncopate:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    /* Agora o fundo padrão é o preto profundo da paleta */
+    @apply bg-black text-white antialiased overflow-x-hidden;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* O toque Clássico para subtítulos ou parágrafos de destaque */
+  .font-luxury {
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* O toque Moderno e Geométrico para Títulos principais */
+  h1, h2, h3, .font-display {
+    font-family: 'Syncopate', sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  /* Classes prontas para você jogar no texto e ele acender */
+  .text-glow-red {
+    text-shadow: 0 0 10px theme('colors.neon.red'), 0 0 20px theme('colors.neon.red');
+  }
+  
+  .text-glow-cyan {
+    text-shadow: 0 0 10px theme('colors.neon.cyan'), 0 0 20px theme('colors.neon.cyan');
+  }
+
+  /* Bordas que parecem lâmpadas tubulares */
+  .border-glow-red {
+    box-shadow: 0 0 10px theme('colors.neon.red'), inset 0 0 10px theme('colors.neon.red');
+    border-color: theme('colors.neon.red');
+  }
+
+  /* Glassmorphism Escuro (O minimalismo moderno) - CORRIGIDO */
+  .glass-dark {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+}
+
+/* =========================================
+   ANIMAÇÕES DE INTERAÇÃO (HOVER)
+   ========================================= */
+
+/* Revelação imersiva estilo cortina */
+.reveal-image {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .reveal-image {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Efeito de distorção óptica moderna (Glitch sutil) ao focar em um post */
+.hover-glitch {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.group:hover .hover-glitch {
+  transform: scale(1.03);
+  /* Separação de canais de cor simulando aberração cromática rápida */
+  filter: drop-shadow(4px 0 0 rgba(255,42,42,0.4)) drop-shadow(-4px 0 0 rgba(0,240,255,0.4));
+}
