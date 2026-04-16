@@ -163,7 +163,7 @@ export function Home() {
                         <ImageIcon size={12} className="text-neon-cyan" />
                       )}
                       <span className={`text-[9px] tracking-[0.2em] font-display font-bold uppercase ${item.type === 'post' ? 'text-[#EF3340]' : 'text-neon-cyan'}`}>
-                        {item.type === 'post' ? 'Editorial' : 'Acervo Visual'}
+                        {item.type === 'post' ? 'Editorial' : 'Portifólio'}
                       </span>
                     </div>
                   </div>
