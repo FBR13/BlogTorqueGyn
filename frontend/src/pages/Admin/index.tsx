@@ -386,7 +386,7 @@ export function Admin() {
                   </button>
 
                   <button onClick={() => setActiveTab('posts')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'posts' ? 'border-neon-red text-white text-glow-red' : 'border-transparent text-gray-500 hover:text-white'}`}>
-                    <FileText size={14} /> Editorial
+                    <FileText size={14} /> Blog
                   </button>
 
                   <button onClick={() => setActiveTab('metrics')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'metrics' ? 'border-white text-white' : 'border-transparent text-gray-500 hover:text-white'}`}>

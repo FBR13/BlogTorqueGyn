@@ -20,7 +20,7 @@ export function Header() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Portfólio', path: '/portfolio' },
-    { name: 'Editorial', path: '/blog' }
+    { name: 'Blog', path: '/blog' }
   ];
 
   return (
@@ -50,10 +50,6 @@ export function Header() {
           ))}
         </nav>
           
-
-        {/* =========================================
-            AÇÕES RÁPIDAS (DESKTOP & MOBILE LADO A LADO)
-            ========================================= */}
         <div className="flex items-center gap-4 md:gap-6">
           
           {/* O ÍCONE FURTIVO (Sempre visível, tanto no PC quanto no Celular) */}
@@ -78,9 +74,6 @@ export function Header() {
 
       </div>
 
-      {/* =========================================
-          GAVETA MENU MOBILE (Sem o rodapé de login agora)
-          ========================================= */}
       <div 
         className={`md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${
           isMobileMenuOpen ? 'max-h-[300px] opacity-100 py-6' : 'max-h-0 opacity-0 py-0'
