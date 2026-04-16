@@ -1,40 +1,43 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Header } from './components/Header';
-import { ProtectedRoute } from './components/ProtectedRoute'; 
 
+// Importação do Cérebro de Autenticação e Segurança
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+
+// Importação dos Componentes Visuais
+import { Header } from './components/Header';
+
+// Importação de todas as Páginas
 import { Home } from './pages/Home';
 import { Blog } from './pages/Blog';
+import { PostDetail } from './pages/PostDetail'; // <-- A página que lê a matéria
 import { Portfolio } from './pages/Portfolio';
-import { PostDetail } from './pages/PostDetail';
 import { Login } from './pages/Login';
 import { Admin } from './pages/Admin';
 
-function App() {
+export function App() {
   return (
-    <Router>
-      {/* Retirado o bg-white e text-black. O index.css agora dita as regras! */}
-      <div className="min-h-screen font-sans flex flex-col relative z-0">
+    <AuthProvider>
+      <Router>
+        {/* O Header fica fora do <Routes> para aparecer em todas as páginas */}
         <Header />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:id" element={<PostDetail />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/login" element={<Login />} />
-            
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              } 
-            />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+
+        <Routes>
+          {/* Rotas Públicas */}
+          <Route path="/" element={<Home />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<PostDetail />} />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
