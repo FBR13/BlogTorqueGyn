@@ -142,7 +142,7 @@ export function Home() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-              {latestFeed.map((item, index) => (
+              {latestFeed.map((item) => (
                 <Link
                   key={`${item.type}-${item.id}`}
                   to={item.type === 'post' ? `/blog/${item.id}` : '/portfolio'}
