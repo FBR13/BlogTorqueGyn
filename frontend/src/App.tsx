@@ -15,7 +15,6 @@ function AnalyticsTracker() {
   const location = useLocation();
 
   useEffect(() => {
-    // 1. Procura o crachá do visitante. Se não tiver, cria um novo e salva no navegador!
     let sessionId = localStorage.getItem('torque_session');
     if (!sessionId) {
       sessionId = 'visitor_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -24,7 +23,6 @@ function AnalyticsTracker() {
 
     const recordView = async () => {
       try {
-        // 2. Envia o caminho da página E a identificação única do usuário para o banco
         await supabase.from('page_views').insert([{
           path: location.pathname,
           session_id: sessionId

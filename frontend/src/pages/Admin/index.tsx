@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
-import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle } from 'lucide-react';
+import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, MessageSquare, Star } from 'lucide-react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
 
-const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'BMW', 'Volkswagen', 'Audi'];
+const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'Mercedes AMG', 'BMW', 'Volkswagen', 'Audi', 'Chevrolet', 'Ford', 'Nissan', 'Honda', 'Subaru', 'Mitsubishi', 'Mazda', 'Jaguar', 'Land Rover', 'Volvo', 'Tesla', 'McLaren', 'Aston Martin', 'Bugatti', 'Pagani', 'Koenigsegg', 'Alfa Romeo', 'Fiat', 'Renault', 'Peugeot', 'Citroën'];
 
 function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdate: (id: string, newImages: string[]) => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,7 +36,6 @@ function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdat
 
       const updatedImages = tab === 'portfolio' ? [...images, ...uploadedUrls] : [uploadedUrls[0]];
 
-      // ATUALIZADO: Usando Supabase direto!
       const payload = tab === 'portfolio' ? { images: updatedImages } : { image_url: updatedImages[0] };
       const { error } = await supabase.from(tab).update(payload).eq('id', item.id);
       if (error) throw error;
@@ -57,7 +56,6 @@ function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdat
     try {
       const updatedImages = images.filter((_: any, idx: number) => idx !== currentIndex);
 
-      // ATUALIZADO: Usando Supabase direto!
       const payload = tab === 'portfolio' ? { images: updatedImages } : { image_url: null };
       const { error } = await supabase.from(tab).update(payload).eq('id', item.id);
       if (error) throw error;
@@ -119,7 +117,9 @@ function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdat
 
 export function Admin() {
   const { signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<'posts' | 'portfolio' | 'metrics'>('posts');
+
+  // Agora o painel carrega direto no Portfólio por padrão!
+  const [activeTab, setActiveTab] = useState<'posts' | 'portfolio' | 'metrics'>('portfolio');
   const [items, setItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -140,13 +140,13 @@ export function Admin() {
 
   const [pageViews, setPageViews] = useState<any[]>([]);
   const [portfolioStats, setPortfolioStats] = useState({ totalRatings: 0, average: 0 });
+  const [recentComments, setRecentComments] = useState<any[]>([]);
 
   useEffect(() => {
     if (!isCreating && activeTab !== 'metrics') fetchItems();
     if (activeTab === 'metrics') fetchMetrics();
   }, [isCreating, activeTab]);
 
-  // ATUALIZADO: Puxando direto do Supabase
   const fetchItems = async () => {
     setIsLoading(true);
     try {
@@ -181,12 +181,24 @@ export function Admin() {
         chartData.sort((a, b) => b.acessos - a.acessos);
         setPageViews(chartData);
       }
-      const { data: ratingsData } = await supabase.from('portfolio_ratings').select('rating_value');
+
+      const { data: ratingsData } = await supabase
+        .from('portfolio_ratings')
+        .select('rating_value, reviewer_name, review_text, created_at, portfolio(title, brand)')
+        .order('created_at', { ascending: false });
+
       if (ratingsData && ratingsData.length > 0) {
-        const sum = ratingsData.reduce((acc, curr) => acc + curr.rating_value, 0);
+        const sum = ratingsData.reduce((acc, curr) => acc + (curr.rating_value || 0), 0);
         setPortfolioStats({ totalRatings: ratingsData.length, average: (sum / ratingsData.length) });
+
+        const comments = ratingsData.filter(r => r.review_text && r.review_text.trim() !== '');
+        setRecentComments(comments);
       }
-    } catch (error) { console.error("Erro nas métricas:", error); } finally { setIsLoading(false); }
+    } catch (error) {
+      console.error("Erro nas métricas:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEdit = (item: any) => {
@@ -249,7 +261,6 @@ export function Admin() {
     }
   };
 
-  // ATUALIZADO: Salvar, Editar e Criar 100% no Supabase
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -292,7 +303,6 @@ export function Admin() {
         payload.image_url = finalNewImageUrls[0];
       }
 
-      // COMUNICAÇÃO DIRETA COM O SUPABASE AQUI!
       if (editingId) {
         const { error } = await supabase.from(activeTab).update(payload).eq('id', editingId);
         if (error) throw error;
@@ -314,7 +324,6 @@ export function Admin() {
 
   const requestDelete = (id: string) => setDeletingId(id);
 
-  // ATUALIZADO: Deletar usando Supabase
   const confirmDelete = async () => {
     if (!deletingId) return;
     try {
@@ -380,15 +389,14 @@ export function Admin() {
               <div className="w-full">
                 <h1 className="text-3xl md:text-4xl font-luxury tracking-tight text-white italic mb-6">Controle de Acervo</h1>
 
+                {/* AQUI ESTÁ A BARRA DE NAVEGAÇÃO REORDENADA E CORRIGIDA */}
                 <div className="flex gap-4 md:gap-8 overflow-x-auto w-full">
                   <button onClick={() => setActiveTab('portfolio')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'portfolio' ? 'border-neon-cyan text-white text-glow-cyan' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <ImageIcon size={14} /> Portifólio
                   </button>
-
                   <button onClick={() => setActiveTab('posts')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'posts' ? 'border-neon-red text-white text-glow-red' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <FileText size={14} /> Blog
                   </button>
-
                   <button onClick={() => setActiveTab('metrics')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'metrics' ? 'border-white text-white' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <Activity size={14} /> Telemetria
                   </button>
@@ -428,8 +436,8 @@ export function Admin() {
                     <div className="glass-dark bg-black/60 border border-white/10 p-6 md:p-8 rounded-xl">
                       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 border-b border-white/10 pb-4 mb-8">Visitantes por Página</h3>
 
-                      <div className="h-72 w-full min-w-full">
-                        <ResponsiveContainer width="99%" height="100%">
+                      <div className="w-full" style={{ minWidth: '100%', minHeight: 300, height: 300 }}>
+                        <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={pageViews} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
@@ -439,6 +447,53 @@ export function Admin() {
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
+                    </div>
+
+                    <div className="glass-dark bg-black/60 border border-white/10 p-6 md:p-8 rounded-xl">
+                      <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 border-b border-white/10 pb-4 mb-6 flex items-center gap-2">
+                        <MessageSquare size={14} className="text-neon-cyan" /> Feed de Avaliações (Portfólio)
+                      </h3>
+
+                      {recentComments.length === 0 ? (
+                        <p className="text-[10px] tracking-widest text-gray-600 uppercase text-center py-8">Nenhum comentário registrado.</p>
+                      ) : (
+                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                          {recentComments.map((comment, idx) => {
+                            const carInfo = comment.portfolio;
+                            const carName = carInfo ? `${carInfo.brand} ${carInfo.title}` : 'Projeto Removido';
+
+                            return (
+                              <div key={idx} className="bg-white/5 border border-white/5 p-5 rounded-lg hover:border-neon-cyan/50 transition-colors group">
+                                <div className="flex justify-between items-start mb-3">
+                                  <div className="flex flex-col">
+                                    <span className="text-neon-cyan font-bold text-[11px] tracking-widest uppercase block mb-1">
+                                      {comment.reviewer_name || 'Anônimo'}
+                                    </span>
+                                    <span className="text-gray-500 text-[8px] tracking-[0.2em] uppercase">
+                                      Ref: {carName}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-0.5">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                      <Star
+                                        key={star}
+                                        size={12}
+                                        className={star <= comment.rating_value ? 'text-neon-cyan fill-neon-cyan' : 'text-gray-800 fill-gray-800'}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                                <p className="text-gray-300 text-sm leading-relaxed italic border-l-2 border-white/10 pl-3 group-hover:border-neon-cyan transition-colors">
+                                  "{comment.review_text}"
+                                </p>
+                                <span className="text-gray-600 text-[8px] tracking-[0.2em] uppercase mt-4 block">
+                                  {new Date(comment.created_at).toLocaleDateString('pt-BR')} às {new Date(comment.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -508,8 +563,9 @@ export function Admin() {
                     <span>{formData.brand}</span>
                     <ChevronDown size={16} className={`text-gray-500 group-hover:text-neon-cyan transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-neon-cyan' : ''}`} />
                   </div>
+
                   {isDropdownOpen && (
-                    <div className="absolute top-full left-0 w-full mt-2 glass-dark bg-black/95 border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl animate-fade-in">
+                    <div className="absolute top-full left-0 w-full mt-2 glass-dark bg-black/95 border border-white/10 rounded-xl overflow-y-auto z-50 shadow-2xl animate-fade-in max-h-[144px] custom-scrollbar">
                       {BRANDS.map(b => (
                         <div key={b} onClick={() => { setFormData({ ...formData, brand: b }); setIsDropdownOpen(false); }} className={`px-4 py-4 text-[10px] md:text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 ${formData.brand === b ? 'bg-neon-cyan/10 text-neon-cyan border-l-2 border-neon-cyan' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
                           {b}
@@ -522,7 +578,7 @@ export function Admin() {
 
               <div className="relative pt-2 space-y-4">
                 <label className="text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-gray-500 font-bold block border-b border-white/10 pb-2">
-                  {editingId ? 'Gerenciar Portifólio' : 'Fotografia (Obrigatória)'}
+                  {editingId ? 'Gerenciar Acervo Visual' : 'Fotografia (Obrigatória)'}
                 </label>
 
                 {editingId && editingImages.length > 0 ? (
