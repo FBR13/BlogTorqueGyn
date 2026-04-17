@@ -1,73 +1,97 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-
-interface Post { id: string; title: string; brand: string; description: string; content: string; image_url: string; created_at: string; }
+import { ArrowLeft, Calendar, FileText } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 export function PostDetail() {
-    const { id } = useParams();
-    const [post, setPost] = useState<Post | null>(null);
-    const [loading, setLoading] = useState(true);
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/posts/${id}`);
-                if (!response.ok) throw new Error('Falha ao buscar matéria');
-                const data = await response.json();
-                setPost(data);
-            } catch (error) { console.error(error); } finally { setLoading(false); }
-        };
-        fetchPost();
-    }, [id]);
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        // BUSCA DIRETA NO SUPABASE
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('id', id)
+          .single();
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><span className="text-[10px] font-display tracking-[0.3em] uppercase text-gray-500 animate-pulse">Descriptografando...</span></div>;
-    if (!post) return <div className="min-h-screen flex items-center justify-center flex-col gap-6"><h1 className="text-4xl font-display text-white">Erro 404</h1><Link to="/blog" className="text-[10px] font-display tracking-widest uppercase border-b border-white/30 pb-1 hover:text-neon-red hover:border-neon-red transition-colors">Voltar ao Radar</Link></div>;
+        if (error) throw error;
+        setPost(data);
+      } catch (error) {
+        console.error("Erro ao buscar matéria:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    if (id) fetchPost();
+  }, [id]);
+
+  if (loading) {
     return (
-        <article className="min-h-screen pb-20 md:pb-32">
-            <header className="relative w-full h-[60vh] md:h-[85vh] bg-black">
-                <img src={post.image_url} alt={post.title} className="w-full h-full object-cover opacity-50" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 md:via-black/40 to-transparent" />
-
-                <div className="absolute bottom-0 left-0 w-full p-6 md:p-16">
-                    <div className="container mx-auto max-w-4xl">
-                        <Link to="/blog" className="inline-flex items-center gap-3 md:gap-4 text-white/50 hover:text-white transition-colors mb-6 md:mb-8 group">
-                            <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
-                            <span className="text-[9px] md:text-[10px] font-display tracking-[0.3em] uppercase font-bold">Retornar</span>
-                        </Link>
-
-                        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-                            <span className="text-[9px] md:text-[10px] font-display tracking-[0.4em] uppercase text-neon-cyan text-glow-cyan font-bold">{post.brand}</span>
-                            <span className="w-1 h-1 rounded-full bg-white/30" />
-                            <span className="text-[9px] md:text-[10px] font-display tracking-[0.2em] uppercase text-white/50">{new Date(post.created_at).toLocaleDateString('pt-BR')}</span>
-                        </div>
-
-                        <h1 className="text-3xl md:text-6xl font-display font-bold text-white leading-tight mb-4 md:mb-6">{post.title}</h1>
-                        <p className="text-sm md:text-xl text-gray-400 font-light max-w-3xl leading-relaxed border-l-2 border-neon-red pl-4 md:pl-6">{post.description}</p>
-                    </div>
-                </div>
-            </header>
-
-            <div className="container mx-auto px-6 pt-16 md:pt-24">
-                <div className="max-w-2xl mx-auto">
-                    <div className="text-gray-300 font-light leading-[2.0] md:leading-[2.2] tracking-wide">
-                        {post.content.split('\n').map((paragraph, index) => (
-                            paragraph.trim() ? (
-                                <p key={index} className="mb-8 md:mb-10 text-[16px] md:text-[19px]">
-                                    {index === 0 ? <span className="float-left text-5xl md:text-7xl font-luxury italic leading-[0.8] pr-3 md:pr-4 pt-1 md:pt-2 text-neon-red text-shadow-xl">{paragraph.charAt(0)}</span> : null}
-                                    {index === 0 ? paragraph.slice(1) : paragraph}
-                                </p>
-                            ) : null
-                        ))}
-                    </div>
-
-                    <div className="mt-20 md:mt-32 pt-8 md:pt-12 border-t border-white/10 flex justify-between items-center">
-                        <span className="text-[9px] md:text-[10px] font-display tracking-[0.4em] font-bold uppercase text-gray-600">Fim do Registro</span>
-                        <span className="w-2 h-2 bg-neon-cyan rounded-full animate-pulse text-glow-cyan"></span>
-                    </div>
-                </div>
-            </div>
-        </article>
+      <div className="min-h-screen bg-black flex items-center justify-center relative z-0">
+         <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)] opacity-40 pointer-events-none"></div>
+        <span className="text-[10px] font-display tracking-[0.4em] uppercase text-neon-red animate-pulse">Descriptografando...</span>
+      </div>
     );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center relative z-0 text-center px-6">
+        <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)] opacity-40 pointer-events-none"></div>
+        <h1 className="text-4xl font-display font-bold text-white mb-4">Registro Não Encontrado</h1>
+        <p className="text-gray-400 mb-8">Esta matéria foi removida ou o link é inválido.</p>
+        <Link to="/blog" className="text-[10px] tracking-widest uppercase text-neon-red border border-neon-red px-6 py-3 hover:bg-neon-red hover:text-black transition-colors">Voltar ao Radar</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-black min-h-screen selection:bg-neon-red selection:text-white relative z-0 pb-20">
+      {/* Fundo Texturizado */}
+      <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_0%,#000_50%,transparent_100%)] opacity-40 pointer-events-none fixed"></div>
+
+      {/* Capa do Post */}
+      <div className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden border-b border-white/10">
+        {post.image_url && (
+          <img src={post.image_url} alt={post.title} className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+        
+        <div className="absolute bottom-0 left-0 w-full p-6 md:p-16 container mx-auto">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-[9px] font-bold tracking-[0.2em] uppercase text-gray-400 hover:text-neon-red transition-colors mb-6 group">
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Voltar ao Editorial
+          </Link>
+          
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <span className="glass-dark px-3 py-1.5 rounded-full flex items-center gap-2 bg-black/60 border border-white/10">
+              <FileText size={10} className="text-neon-red" />
+              <span className="text-[8px] tracking-[0.2em] font-bold uppercase text-neon-red">{post.brand}</span>
+            </span>
+            <span className="flex items-center gap-1 text-[9px] tracking-[0.2em] uppercase text-gray-400">
+              <Calendar size={12} /> {new Date(post.created_at).toLocaleDateString('pt-BR')}
+            </span>
+          </div>
+          
+          <h1 className="text-3xl md:text-6xl font-display font-bold text-white max-w-4xl leading-tight">
+            {post.title}
+          </h1>
+        </div>
+      </div>
+
+      {/* Corpo do Texto */}
+      <article className="container mx-auto px-6 pt-12 md:pt-20 max-w-3xl relative z-10">
+        <div className="prose prose-invert prose-p:text-gray-300 prose-p:leading-relaxed prose-p:font-light prose-h2:font-display prose-h2:text-2xl prose-h2:text-white prose-a:text-neon-red hover:prose-a:text-white prose-strong:text-white prose-strong:font-bold prose-blockquote:border-neon-red prose-blockquote:bg-white/5 prose-blockquote:p-4 prose-blockquote:not-italic prose-blockquote:text-gray-300 text-justify">
+          {/* Se você tiver Markdown, use um renderizador. Se for texto puro, dividimos por quebra de linha */}
+          {post.content.split('\n').map((paragraph: string, idx: number) => (
+            paragraph.trim() ? <p key={idx}>{paragraph}</p> : <br key={idx} />
+          ))}
+        </div>
+      </article>
+    </div>
+  );
 }

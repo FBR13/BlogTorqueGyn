@@ -71,8 +71,8 @@ function RatingForm({ portfolioId }: { portfolioId: string }) {
                   size={24}
                   strokeWidth={1.5}
                   className={`cursor-pointer transition-all duration-300 ${star <= (hoveredRating || rating)
-                      ? 'text-neon-cyan fill-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] scale-110'
-                      : 'text-gray-600 hover:text-gray-400'
+                    ? 'text-neon-cyan fill-neon-cyan drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] scale-110'
+                    : 'text-gray-600 hover:text-gray-400'
                     }`}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
@@ -195,13 +195,21 @@ export function Portfolio() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Puxa os dados do portfólio
-        const portfolioRes = await fetch(`${import.meta.env.VITE_API_URL}/portfolio`);
-        const portfolioData = await portfolioRes.json();
-        setItems(portfolioData);
+        // 1. A MÁGICA: Busca dos carros direto do Supabase (ignora o backend do Render)
+        const { data: portfolioData, error: portfolioError } = await supabase
+          .from('portfolio')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-        // 2. Puxa todas as avaliações para montar as estrelas
-        const { data: ratingsData } = await supabase.from('portfolio_ratings').select('portfolio_id, rating_value');
+        if (portfolioError) throw portfolioError;
+        setItems(portfolioData || []);
+
+        // 2. Busca de todas as avaliações com tratamento de erro
+        const { data: ratingsData, error: ratingsError } = await supabase
+          .from('portfolio_ratings')
+          .select('portfolio_id, rating_value');
+
+        if (ratingsError) throw ratingsError;
 
         if (ratingsData) {
           // Calcula a média e a quantidade de votos para cada carro
@@ -223,7 +231,7 @@ export function Portfolio() {
         }
 
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao carregar dados do portfólio:", error);
       } finally {
         setLoading(false);
       }
