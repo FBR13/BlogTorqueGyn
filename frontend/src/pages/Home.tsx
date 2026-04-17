@@ -1,35 +1,42 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Crosshair, Image as ImageIcon, FileText } from 'lucide-react';
+import { ArrowRight, Zap, Crosshair, Image as ImageIcon, FileText, MessageCircle, X, Send } from 'lucide-react';
+// Importando o supabase para acabar com a lentidão do Render na Home também!
+import { supabase } from '../services/supabase';
 
-// O "tipo" agora aceita tanto Posts quanto Portfólios
 interface FeedItem {
   id: string;
   title: string;
   brand: string;
   image_url: string;
   type: 'post' | 'portfolio';
-  created_at: string; // Precisamos da data para organizar
+  created_at: string;
 }
 
 export function Home() {
   const [latestFeed, setLatestFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [docType, setDocType] = useState<'CPF' | 'CNPJ'>('CPF');
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    company: '',
+    message: ''
+  });
 
   useEffect(() => {
     const fetchEverything = async () => {
       try {
-        // 1. Busca os dados nas duas rotas simultaneamente
+        // 1. Busca os dados DIRETAMENTE do Supabase (Super rápido, ignora o Render)
         const [postsRes, portfolioRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/posts`),
-          fetch(`${import.meta.env.VITE_API_URL}/portfolio`)
+          supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(5),
+          supabase.from('portfolio').select('*').order('created_at', { ascending: false }).limit(5)
         ]);
 
-        let postsData = [];
-        let portfolioData = [];
-
-        if (postsRes.ok) postsData = await postsRes.json();
-        if (portfolioRes.ok) portfolioData = await portfolioRes.json();
+        let postsData = postsRes.data || [];
+        let portfolioData = portfolioRes.data || [];
 
         // 2. Transforma os Posts para o formato do Feed
         const formattedPosts: FeedItem[] = postsData.map((item: any) => ({
@@ -41,12 +48,12 @@ export function Home() {
           created_at: item.created_at
         }));
 
-        // 3. Transforma o Portfólio para o formato do Feed (pegando a foto 0)
+        // 3. Transforma o Portfólio para o formato do Feed
         const formattedPortfolio: FeedItem[] = portfolioData.map((item: any) => ({
           id: item.id,
           title: item.title,
           brand: item.brand,
-          image_url: item.images && item.images.length > 0 ? item.images[0] : '', // Previne erro se não tiver foto
+          image_url: item.images && item.images.length > 0 ? item.images[0] : '',
           type: 'portfolio',
           created_at: item.created_at
         }));
@@ -68,6 +75,33 @@ export function Home() {
 
     fetchEverything();
   }, []);
+
+  // --- Lógica de Envio do WhatsApp ---
+  const handleWhatsAppSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const WHATSAPP_NUMBER = "5562991100118";
+
+    let text = `*Agendamento de Ensaio - TorqueGyn* 📸\n\n`;
+    text += `*Nome:* ${formData.name}\n`;
+    text += `*Telefone:* ${formData.phone}\n`;
+    text += `*E-mail:* ${formData.email}\n`;
+    text += `*Documento:* ${docType}\n`;
+
+    if (docType === 'CNPJ') {
+      text += `*Empresa:* ${formData.company}\n`;
+    }
+
+    text += `\n*Mensagem:*\n${formData.message}`;
+
+    const encodedText = encodeURIComponent(text);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`;
+
+    window.open(whatsappUrl, '_blank');
+
+    setIsModalOpen(false);
+    setFormData({ name: '', phone: '', email: '', company: '', message: '' });
+  };
 
   return (
     <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0">
@@ -103,7 +137,8 @@ export function Home() {
             Documentamos os projetos mais audaciosos e a mecânica de precisão. Onde a engenharia brutal encontra o design de alta costura.
           </p>
 
-          <div className="animate-slide-up w-full md:w-auto" style={{ animationDelay: '0.4s' }}>
+          {/* BOTÕES DE AÇÃO PRINCIPAIS */}
+          <div className="animate-slide-up flex flex-col md:flex-row gap-4 w-full md:w-auto" style={{ animationDelay: '0.4s' }}>
             <Link
               to="/portfolio"
               className="flex md:inline-flex justify-center items-center gap-4 border border-white/20 glass-dark px-8 py-5 text-[11px] font-display font-bold tracking-[0.3em] uppercase hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all duration-500 group bg-black/40 w-full md:w-auto"
@@ -112,6 +147,14 @@ export function Home() {
               <span>Acessar Portifólio</span>
               <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform duration-500" />
             </Link>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex md:inline-flex justify-center items-center gap-4 border border-neon-cyan/50 bg-neon-cyan/10 px-8 py-5 text-[11px] font-display font-bold tracking-[0.3em] uppercase text-neon-cyan hover:bg-neon-cyan hover:text-black hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all duration-500 group w-full md:w-auto"
+            >
+              <MessageCircle size={16} className="group-hover:scale-110 transition-transform" />
+              <span>Agende Suas Fotos</span>
+            </button>
           </div>
         </div>
       </section>
@@ -183,6 +226,127 @@ export function Home() {
           )}
         </div>
       </section>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 animate-fade-in py-10">
+          <div className="glass-dark bg-black/95 border border-white/10 p-6 md:p-10 rounded-2xl max-w-lg w-full relative overflow-y-auto max-h-full shadow-2xl">
+
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-white transition-colors"
+            >
+              <X size={20} strokeWidth={1.5} />
+            </button>
+
+            <div className="mb-8">
+              <span className="text-[9px] tracking-[0.3em] uppercase text-neon-cyan font-bold mb-3 block flex items-center gap-2">
+                <MessageCircle size={14} /> Atendimento Premium
+              </span>
+              <h2 className="text-2xl md:text-3xl font-luxury text-white italic">Agende Suas Fotos</h2>
+              <p className="text-xs text-gray-400 mt-2 tracking-wide">
+                Preencha os dados abaixo para darmos início ao seu projeto visual.
+              </p>
+            </div>
+
+            <form onSubmit={handleWhatsAppSubmit} className="space-y-6">
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
+                  placeholder="Nome Completo *"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="relative">
+                  <input
+                    type="tel"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
+                    placeholder="Seu WhatsApp *"
+                  />
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
+                    placeholder="E-mail *"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="text-[8px] tracking-[0.2em] uppercase text-gray-500 font-bold mb-3 block">Tipo de Cliente</label>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setDocType('CPF')}
+                    className={`flex-1 py-2 text-[10px] tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CPF'
+                        ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+                        : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
+                      }`}
+                  >
+                    Pessoa Física
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDocType('CNPJ')}
+                    className={`flex-1 py-2 text-[10px] tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CNPJ'
+                        ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+                        : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
+                      }`}
+                  >
+                    Pessoa Jurídica
+                  </button>
+                </div>
+              </div>
+
+              {docType === 'CNPJ' && (
+                <div className="relative animate-fade-in">
+                  <input
+                    type="text"
+                    required
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
+                    placeholder="Nome da Empresa *"
+                  />
+                </div>
+              )}
+
+              <div className="relative pt-2">
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="block w-full p-4 text-sm text-gray-300 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-neon-cyan focus:bg-white/10 transition-colors placeholder:text-gray-600 resize-none"
+                  placeholder="Fale um pouco sobre o projeto e o veículo... *"
+                />
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  className="w-full flex items-center justify-center gap-3 bg-neon-cyan text-black px-8 py-4 hover:bg-[#00d5e6] transition-all duration-300 rounded font-bold shadow-[0_0_15px_rgba(0,240,255,0.3)] hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] group"
+                >
+                  <span className="text-[10px] tracking-[0.3em] uppercase">Confirmar e Ir para o WhatsApp</span>
+                  <Send size={16} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
