@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
-import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, MessageSquare, Star } from 'lucide-react';
+import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, MessageSquare, Star, Calendar, Phone, Mail } from 'lucide-react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
 
 const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'Mercedes AMG', 'BMW', 'Volkswagen', 'Audi', 'Chevrolet', 'Ford', 'Nissan', 'Honda', 'Subaru', 'Mitsubishi', 'Mazda', 'Jaguar', 'Land Rover', 'Volvo', 'Tesla', 'McLaren', 'Aston Martin', 'Bugatti', 'Pagani', 'Koenigsegg', 'Alfa Romeo', 'Fiat', 'Renault', 'Peugeot', 'Citroën'];
@@ -118,7 +118,7 @@ function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdat
 export function Admin() {
   const { signOut } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'portfolio' | 'metrics'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'posts' | 'portfolio' | 'metrics' | 'bookings'>('portfolio');
   const [items, setItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -141,9 +141,7 @@ export function Admin() {
   const [portfolioStats, setPortfolioStats] = useState({ totalRatings: 0, average: 0 });
   const [recentComments, setRecentComments] = useState<any[]>([]);
 
-  // ==========================================
-  // ESTADOS DA PAGINAÇÃO
-  // ==========================================
+  // PAGINAÇÃO
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
@@ -406,12 +404,15 @@ export function Admin() {
               <div className="w-full">
                 <h1 className="text-3xl md:text-4xl font-luxury tracking-tight text-white italic mb-6">Controle de Acervo</h1>
 
-                <div className="flex gap-4 md:gap-8 overflow-x-auto w-full">
+                <div className="flex gap-4 md:gap-8 overflow-x-auto w-full custom-scrollbar">
                   <button onClick={() => setActiveTab('portfolio')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'portfolio' ? 'border-neon-cyan text-white text-glow-cyan' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <ImageIcon size={14} /> Portifólio
                   </button>
                   <button onClick={() => setActiveTab('posts')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'posts' ? 'border-neon-red text-white text-glow-red' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <FileText size={14} /> Blog
+                  </button>
+                  <button onClick={() => setActiveTab('bookings')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'bookings' ? 'border-[#ffaa00] text-white shadow-[0_0_10px_rgba(255,170,0,0.3)]' : 'border-transparent text-gray-500 hover:text-white'}`}>
+                    <Calendar size={14} className={activeTab === 'bookings' ? 'text-[#ffaa00]' : ''} /> Sessões
                   </button>
                   <button onClick={() => setActiveTab('metrics')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'metrics' ? 'border-white text-white' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <Activity size={14} /> Telemetria
@@ -419,7 +420,7 @@ export function Admin() {
                 </div>
               </div>
 
-              {activeTab !== 'metrics' && (
+              {(activeTab !== 'metrics' && activeTab !== 'bookings') && (
                 <button onClick={() => setIsCreating(true)} className="flex w-full md:w-auto items-center justify-center gap-3 border border-white/20 glass-dark bg-black/40 text-white px-6 py-4 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-neon-cyan transition-all duration-500 group rounded">
                   <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" />
                   <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Novo Arquivo</span>
@@ -452,7 +453,6 @@ export function Admin() {
                     <div className="glass-dark bg-black/60 border border-white/10 p-6 md:p-8 rounded-xl">
                       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 border-b border-white/10 pb-4 mb-8">Visitantes por Página</h3>
 
-                      {/* CORREÇÃO DO GRÁFICO RECHARTS AQUI: width='99%' e wrapper com min-w-0 e h-[300px] */}
                       <div className="w-full h-[300px] min-w-0 overflow-hidden">
                         <ResponsiveContainer width="99%" height="100%">
                           <BarChart data={pageViews} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -515,8 +515,88 @@ export function Admin() {
                   </>
                 )}
               </div>
+            ) : activeTab === 'bookings' ? (
+              <div className="glass-dark bg-black/60 border border-white/10 rounded-xl overflow-hidden animate-fade-in">
+                {isLoading ? (
+                  <div className="p-8 md:p-12 text-center text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-gray-500 animate-pulse">Lendo Leads...</div>
+                ) : items.length === 0 ? (
+                  <div className="p-8 md:p-12 text-center flex flex-col items-center">
+                    <span className="h-[1px] w-12 bg-white/20 mb-6" />
+                    <p className="text-[9px] md:text-[11px] tracking-[0.2em] uppercase text-gray-500">Nenhum agendamento pendente.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                    {currentItems.map(item => (
+                      <div key={item.id} className="bg-white/5 border border-white/10 rounded-xl p-6 flex flex-col justify-between hover:border-[#ffaa00]/50 transition-colors group">
+                        
+                        <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
+                          <div>
+                            <h3 className="text-xl font-display font-bold text-white group-hover:text-[#ffaa00] transition-colors">{item.name}</h3>
+                            <span className="text-[9px] tracking-widest uppercase text-gray-500 font-bold block mt-1">
+                              {new Date(item.created_at).toLocaleDateString('pt-BR')} - {new Date(item.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <span className="bg-white/10 text-gray-300 px-3 py-1 rounded text-[8px] font-bold tracking-widest uppercase">
+                            {item.doc_type}
+                          </span>
+                        </div>
+
+                        <div className="space-y-3 mb-6 flex-1">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-black rounded-full border border-white/5"><Mail size={12} className="text-gray-400" /></div>
+                            <span className="text-sm text-gray-300 truncate">{item.email}</span>
+                          </div>
+                          
+                          {item.document && (
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-black rounded-full border border-white/5"><FileText size={12} className="text-gray-400" /></div>
+                              <span className="text-sm text-gray-300">{item.document}</span>
+                            </div>
+                          )}
+
+                          {item.message && (
+                            <div className="mt-4 bg-black/40 border border-white/5 p-4 rounded-lg">
+                              <span className="text-[8px] uppercase tracking-widest text-gray-500 font-bold mb-2 block">Detalhes do Projeto</span>
+                              <p className="text-sm text-gray-400 leading-relaxed italic">"{item.message}"</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/5">
+                          {/* CORREÇÃO DO ERRO DO REPLACE AQUI! */}
+                          <a 
+                            href={`https://wa.me/55${(item.phone || '').replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="flex-1 flex justify-center items-center gap-2 bg-[#ffaa00]/10 text-[#ffaa00] border border-[#ffaa00]/50 py-3 rounded hover:bg-[#ffaa00] hover:text-black transition-all font-bold text-[9px] tracking-widest uppercase"
+                          >
+                            <Phone size={12} /> Chamar WhatsApp
+                          </a>
+                          
+                          <button onClick={() => requestDelete(item.id)} className="p-3 text-gray-500 hover:text-neon-red hover:bg-neon-red/10 rounded transition-all border border-transparent hover:border-neon-red/20">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-3 md:gap-4 my-8 pb-6">
+                    <button onClick={() => handlePageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="p-2 border border-white/10 text-white disabled:opacity-20 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all rounded glass-dark bg-black/60"><ChevronLeft size={14} /></button>
+                    <div className="flex items-center gap-1 md:gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button key={page} onClick={() => handlePageChange(page)} className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${currentPage === page ? 'bg-neon-cyan text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'}`}>{page}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} className="p-2 border border-white/10 text-white disabled:opacity-20 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all rounded glass-dark bg-black/60"><ChevronRight size={14} /></button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <div className="glass-dark bg-black/60 border border-white/10 rounded-xl overflow-hidden">
+              <div className="glass-dark bg-black/60 border border-white/10 rounded-xl overflow-hidden animate-fade-in">
                 {isLoading ? (
                   <div className="p-8 md:p-12 text-center text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-gray-500 animate-pulse">Lendo banco de dados...</div>
                 ) : items.length === 0 ? (
@@ -526,7 +606,7 @@ export function Admin() {
                   </div>
                 ) : (
                   <div className="flex flex-col">
-
+                    
                     {currentItems.map(item => (
                       <div key={item.id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-5 border-b border-white/5 group hover:bg-white/5 transition-colors gap-4">
 
@@ -558,7 +638,7 @@ export function Admin() {
                     ))}
 
                     {totalPages > 1 && (
-                      <div className="flex justify-center items-center gap-3 md:gap-4 my-8">
+                      <div className="flex justify-center items-center gap-3 md:gap-4 my-8 pb-6">
                         <button
                           onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
@@ -572,10 +652,11 @@ export function Admin() {
                             <button
                               key={page}
                               onClick={() => handlePageChange(page)}
-                              className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${currentPage === page
+                              className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${
+                                currentPage === page
                                   ? 'bg-neon-cyan text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]'
                                   : 'text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'
-                                }`}
+                              }`}
                             >
                               {page}
                             </button>
@@ -597,7 +678,7 @@ export function Admin() {
             )}
           </>
         ) : (
-          <div className="glass-dark bg-black/80 border border-white/10 rounded-xl p-6 md:p-16 relative">
+          <div className="glass-dark bg-black/80 border border-white/10 rounded-xl p-6 md:p-16 relative animate-slide-up">
             <button onClick={handleCloseForm} className="absolute top-4 right-4 md:top-8 md:right-8 text-gray-500 hover:text-neon-red transition-colors p-2"><X className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} /></button>
             <div className="mb-8 md:mb-12 pt-6 md:pt-0">
               <span className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-neon-cyan font-bold mb-3 md:mb-4 block">{activeTab === 'posts' ? 'Redação Editorial' : 'Curadoria Visual'}</span>

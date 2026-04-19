@@ -18,7 +18,6 @@ export function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [docType, setDocType] = useState<'CPF' | 'CNPJ'>('CPF');
 
-  // Atualizamos o estado para receber o CNPJ no lugar do nome da empresa
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -72,10 +71,9 @@ export function Home() {
 
   // --- FUNÇÕES DE MÁSCARA AUTOMÁTICA ---
   const formatCNPJ = (value: string) => {
-    let v = value.replace(/\D/g, ""); // Remove tudo o que não é dígito
-    if (v.length > 14) v = v.substring(0, 14); // Limita a 14 números
+    let v = value.replace(/\D/g, "");
+    if (v.length > 14) v = v.substring(0, 14);
 
-    // Aplica a formatação XX.XXX.XXX/XXXX-XX
     v = v.replace(/^(\d{2})(\d)/, "$1.$2");
     v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
     v = v.replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4");
@@ -84,19 +82,33 @@ export function Home() {
   };
 
   const formatPhone = (value: string) => {
-    let v = value.replace(/\D/g, ""); // Remove tudo o que não é dígito
-    if (v.length > 11) v = v.substring(0, 11); // Limita a 11 números
+    let v = value.replace(/\D/g, "");
+    if (v.length > 11) v = v.substring(0, 11);
 
-    // Aplica a formatação (XX) XXXXX-XXXX
     v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
     v = v.replace(/(\d)(\d{4})$/, "$1-$2");
     return v;
   };
 
-  // --- Lógica de Envio do WhatsApp ---
-  const handleWhatsAppSubmit = (e: React.FormEvent) => {
+  // --- Lógica de Envio do WhatsApp e CRM ---
+  const handleWhatsAppSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 1. SALVAR NO BANCO DE DADOS (NOVO CRM)
+    try {
+      await supabase.from('bookings').insert([{
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        doc_type: docType,
+        document: formData.cnpj,
+        message: formData.message
+      }]);
+    } catch (err) {
+      console.error("Erro ao registrar agendamento no banco:", err);
+    }
+
+    // 2. ABRIR WHATSAPP
     const WHATSAPP_NUMBER = "5562991100118";
 
     let text = `*Agendamento de Ensaio - TorqueGyn* 📸\n\n`;
@@ -154,7 +166,6 @@ export function Home() {
             Documentamos os projetos mais audaciosos e a mecânica de precisão. Onde a engenharia brutal encontra o design de alta costura.
           </p>
 
-          {/* BOTÕES DE AÇÃO PRINCIPAIS */}
           <div className="animate-slide-up flex flex-col md:flex-row gap-4 w-full md:w-auto" style={{ animationDelay: '0.4s' }}>
             <Link
               to="/portfolio"
@@ -176,7 +187,7 @@ export function Home() {
         </div>
       </section>
 
-      {/* RADAR (MIX DE BLOG E PORTFOLIO) */}
+      {/* RADAR */}
       <section className="py-20 md:py-32 px-6 relative z-10">
         <div className="container mx-auto">
 
