@@ -118,7 +118,6 @@ function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdat
 export function Admin() {
   const { signOut } = useAuth();
 
-  // Agora o painel carrega direto no Portfólio por padrão!
   const [activeTab, setActiveTab] = useState<'posts' | 'portfolio' | 'metrics'>('portfolio');
   const [items, setItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,6 +140,16 @@ export function Admin() {
   const [pageViews, setPageViews] = useState<any[]>([]);
   const [portfolioStats, setPortfolioStats] = useState({ totalRatings: 0, average: 0 });
   const [recentComments, setRecentComments] = useState<any[]>([]);
+
+  // ==========================================
+  // ESTADOS DA PAGINAÇÃO
+  // ==========================================
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     if (!isCreating && activeTab !== 'metrics') fetchItems();
@@ -349,8 +358,16 @@ export function Admin() {
     setMessage('');
   };
 
+  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+  const currentItems = items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <div className="min-h-screen bg-black flex flex-col relative z-0 selection:bg-neon-red selection:text-white">
+    <div className="min-h-screen bg-black flex flex-col relative z-0 selection:bg-neon-red selection:text-white pt-20 md:pt-24">
       <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_0%,#000_20%,transparent_100%)] opacity-40 pointer-events-none"></div>
 
       {deletingId && (
@@ -370,8 +387,8 @@ export function Admin() {
         </div>
       )}
 
-      <header className="bg-black/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
-        <div className="container mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+      <header className="bg-transparent border-b border-white/10 relative z-40">
+        <div className="container mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-4">
             <Settings size={16} className="text-neon-red animate-spin-slow" />
             <span className="text-[9px] md:text-[10px] tracking-[0.3em] font-bold uppercase text-white">Central Admin</span>
@@ -389,7 +406,6 @@ export function Admin() {
               <div className="w-full">
                 <h1 className="text-3xl md:text-4xl font-luxury tracking-tight text-white italic mb-6">Controle de Acervo</h1>
 
-                {/* AQUI ESTÁ A BARRA DE NAVEGAÇÃO REORDENADA E CORRIGIDA */}
                 <div className="flex gap-4 md:gap-8 overflow-x-auto w-full">
                   <button onClick={() => setActiveTab('portfolio')} className={`flex whitespace-nowrap items-center gap-2 text-[9px] md:text-[10px] tracking-[0.2em] uppercase font-bold pb-3 border-b-2 transition-all ${activeTab === 'portfolio' ? 'border-neon-cyan text-white text-glow-cyan' : 'border-transparent text-gray-500 hover:text-white'}`}>
                     <ImageIcon size={14} /> Portifólio
@@ -404,7 +420,7 @@ export function Admin() {
               </div>
 
               {activeTab !== 'metrics' && (
-                <button onClick={() => setIsCreating(true)} className="flex w-full md:w-auto items-center justify-center gap-3 border border-white/20 glass-dark bg-black/40 text-white px-6 py-4 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-neon-cyan transition-all duration-500 group">
+                <button onClick={() => setIsCreating(true)} className="flex w-full md:w-auto items-center justify-center gap-3 border border-white/20 glass-dark bg-black/40 text-white px-6 py-4 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-neon-cyan transition-all duration-500 group rounded">
                   <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" />
                   <span className="text-[10px] font-bold tracking-[0.2em] uppercase">Novo Arquivo</span>
                 </button>
@@ -436,8 +452,9 @@ export function Admin() {
                     <div className="glass-dark bg-black/60 border border-white/10 p-6 md:p-8 rounded-xl">
                       <h3 className="text-[10px] uppercase tracking-[0.3em] font-bold text-gray-400 border-b border-white/10 pb-4 mb-8">Visitantes por Página</h3>
 
-                      <div className="w-full" style={{ minWidth: '100%', minHeight: 300, height: 300 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                      {/* CORREÇÃO DO GRÁFICO RECHARTS AQUI: width='99%' e wrapper com min-w-0 e h-[300px] */}
+                      <div className="w-full h-[300px] min-w-0 overflow-hidden">
+                        <ResponsiveContainer width="99%" height="100%">
                           <BarChart data={pageViews} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#6B7280' }} axisLine={false} tickLine={false} />
@@ -509,7 +526,8 @@ export function Admin() {
                   </div>
                 ) : (
                   <div className="flex flex-col">
-                    {items.map(item => (
+
+                    {currentItems.map(item => (
                       <div key={item.id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-5 border-b border-white/5 group hover:bg-white/5 transition-colors gap-4">
 
                         <div className="flex items-center gap-4 flex-1">
@@ -538,6 +556,41 @@ export function Admin() {
                         </div>
                       </div>
                     ))}
+
+                    {totalPages > 1 && (
+                      <div className="flex justify-center items-center gap-3 md:gap-4 my-8">
+                        <button
+                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="p-2 border border-white/10 text-white disabled:opacity-20 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all rounded glass-dark bg-black/60"
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+
+                        <div className="flex items-center gap-1 md:gap-2">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${currentPage === page
+                                  ? 'bg-neon-cyan text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]'
+                                  : 'text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'
+                                }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="p-2 border border-white/10 text-white disabled:opacity-20 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all rounded glass-dark bg-black/60"
+                        >
+                          <ChevronRight size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -551,7 +604,7 @@ export function Admin() {
               <h2 className="text-3xl md:text-5xl font-luxury text-white italic">{editingId ? 'Editar Publicação' : 'Nova Publicação'}</h2>
             </div>
 
-            {message && <div className={`mb-6 p-4 border text-[9px] md:text-[10px] tracking-widest font-bold uppercase text-center ${message.includes('Erro') ? 'border-neon-red bg-neon-red/10 text-neon-red' : 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'}`}>{message}</div>}
+            {message && <div className={`mb-6 p-4 border text-[9px] md:text-[10px] tracking-widest font-bold uppercase text-center rounded ${message.includes('Erro') ? 'border-neon-red bg-neon-red/10 text-neon-red' : 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'}`}>{message}</div>}
 
             <form onSubmit={handleSubmit} className="space-y-8 md:space-y-12">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
@@ -631,7 +684,7 @@ export function Admin() {
               )}
 
               <div className="flex justify-end pt-4 md:pt-8">
-                <button type="submit" disabled={isSubmitting || isFastUploading} className="w-full md:w-auto flex items-center justify-center gap-4 border border-white/20 bg-black text-white px-8 py-5 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-neon-cyan transition-all duration-500 disabled:opacity-50 group">
+                <button type="submit" disabled={isSubmitting || isFastUploading} className="w-full md:w-auto flex items-center justify-center gap-4 border border-white/20 bg-black text-white px-8 py-5 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-neon-cyan transition-all duration-500 disabled:opacity-50 group rounded">
                   <span className="text-[9px] md:text-[10px] font-bold tracking-[0.3em] uppercase">{isSubmitting ? 'Processando...' : (editingId ? 'Atualizar Publicação' : 'Autenticar Publicação')}</span>
                   <Save size={16} className="group-hover:scale-110 transition-transform" />
                 </button>

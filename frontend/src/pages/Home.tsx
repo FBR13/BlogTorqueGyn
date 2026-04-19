@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Crosshair, Image as ImageIcon, FileText, MessageCircle, X, Send } from 'lucide-react';
-// Importando o supabase para acabar com a lentidão do Render na Home também!
 import { supabase } from '../services/supabase';
 
 interface FeedItem {
@@ -18,18 +17,19 @@ export function Home() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [docType, setDocType] = useState<'CPF' | 'CNPJ'>('CPF');
+
+  // Atualizamos o estado para receber o CNPJ no lugar do nome da empresa
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    company: '',
+    cnpj: '',
     message: ''
   });
 
   useEffect(() => {
     const fetchEverything = async () => {
       try {
-        // 1. Busca os dados DIRETAMENTE do Supabase (Super rápido, ignora o Render)
         const [postsRes, portfolioRes] = await Promise.all([
           supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(5),
           supabase.from('portfolio').select('*').order('created_at', { ascending: false }).limit(5)
@@ -38,7 +38,6 @@ export function Home() {
         let postsData = postsRes.data || [];
         let portfolioData = portfolioRes.data || [];
 
-        // 2. Transforma os Posts para o formato do Feed
         const formattedPosts: FeedItem[] = postsData.map((item: any) => ({
           id: item.id,
           title: item.title,
@@ -48,7 +47,6 @@ export function Home() {
           created_at: item.created_at
         }));
 
-        // 3. Transforma o Portfólio para o formato do Feed
         const formattedPortfolio: FeedItem[] = portfolioData.map((item: any) => ({
           id: item.id,
           title: item.title,
@@ -58,13 +56,9 @@ export function Home() {
           created_at: item.created_at
         }));
 
-        // 4. Junta tudo num liquidificador
         const allItems = [...formattedPosts, ...formattedPortfolio];
-
-        // 5. Organiza por data (do mais novo pro mais velho)
         allItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        // 6. Salva apenas os 3 primeiros!
         setLatestFeed(allItems.slice(0, 3));
       } catch (error) {
         console.error("Erro ao buscar feed central:", error);
@@ -75,6 +69,29 @@ export function Home() {
 
     fetchEverything();
   }, []);
+
+  // --- FUNÇÕES DE MÁSCARA AUTOMÁTICA ---
+  const formatCNPJ = (value: string) => {
+    let v = value.replace(/\D/g, ""); // Remove tudo o que não é dígito
+    if (v.length > 14) v = v.substring(0, 14); // Limita a 14 números
+
+    // Aplica a formatação XX.XXX.XXX/XXXX-XX
+    v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+    v = v.replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4");
+    v = v.replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, "$1.$2.$3/$4-$5");
+    return v;
+  };
+
+  const formatPhone = (value: string) => {
+    let v = value.replace(/\D/g, ""); // Remove tudo o que não é dígito
+    if (v.length > 11) v = v.substring(0, 11); // Limita a 11 números
+
+    // Aplica a formatação (XX) XXXXX-XXXX
+    v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+    v = v.replace(/(\d)(\d{4})$/, "$1-$2");
+    return v;
+  };
 
   // --- Lógica de Envio do WhatsApp ---
   const handleWhatsAppSubmit = (e: React.FormEvent) => {
@@ -89,7 +106,7 @@ export function Home() {
     text += `*Documento:* ${docType}\n`;
 
     if (docType === 'CNPJ') {
-      text += `*Empresa:* ${formData.company}\n`;
+      text += `*CNPJ:* ${formData.cnpj}\n`;
     }
 
     text += `\n*Mensagem:*\n${formData.message}`;
@@ -100,7 +117,7 @@ export function Home() {
     window.open(whatsappUrl, '_blank');
 
     setIsModalOpen(false);
-    setFormData({ name: '', phone: '', email: '', company: '', message: '' });
+    setFormData({ name: '', phone: '', email: '', cnpj: '', message: '' });
   };
 
   return (
@@ -112,7 +129,7 @@ export function Home() {
       <div className="absolute top-[40%] -right-[10%] w-[60vw] md:w-[40vw] h-[60vw] md:h-[40vw] bg-neon-cyan/10 rounded-full blur-[100px] md:blur-[150px] pointer-events-none -z-10"></div>
 
       {/* HERO SECTION */}
-      <section className="relative flex flex-col justify-center px-6 py-20 md:py-32 min-h-[85vh] md:min-h-[90vh] border-b border-white/10 overflow-hidden">
+      <section className="relative flex flex-col justify-center px-6 pt-16 pb-20 md:pt-24 md:pb-32 min-h-[85vh] md:min-h-[90vh] border-b border-white/10 overflow-hidden">
         <div className="container mx-auto relative z-10">
           <div className="flex items-center gap-4 mb-6 md:mb-8 animate-fade-in">
             <Crosshair size={16} className="text-neon-red animate-spin-slow" />
@@ -198,7 +215,6 @@ export function Home() {
                       <div className="w-full h-full flex items-center justify-center text-white/20 text-[8px] tracking-widest">SEM IMAGEM</div>
                     )}
 
-                    {/* Etiqueta de Identificação (Editorial vs Acervo Visual) */}
                     <div className="absolute top-4 left-4 glass-dark px-4 py-2 rounded-full flex items-center gap-2 bg-black/80 border border-white/10 shadow-xl">
                       {item.type === 'post' ? (
                         <FileText size={12} className="text-[#EF3340]" />
@@ -266,7 +282,8 @@ export function Home() {
                     type="tel"
                     required
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
+                    maxLength={15}
                     className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
                     placeholder="Seu WhatsApp *"
                   />
@@ -291,8 +308,8 @@ export function Home() {
                     type="button"
                     onClick={() => setDocType('CPF')}
                     className={`flex-1 py-2 text-[10px] tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CPF'
-                        ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
-                        : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
+                      ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+                      : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
                       }`}
                   >
                     Pessoa Física
@@ -301,8 +318,8 @@ export function Home() {
                     type="button"
                     onClick={() => setDocType('CNPJ')}
                     className={`flex-1 py-2 text-[10px] tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CNPJ'
-                        ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
-                        : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
+                      ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan'
+                      : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'
                       }`}
                   >
                     Pessoa Jurídica
@@ -315,10 +332,11 @@ export function Home() {
                   <input
                     type="text"
                     required
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    value={formData.cnpj}
+                    onChange={(e) => setFormData({ ...formData, cnpj: formatCNPJ(e.target.value) })}
+                    maxLength={18}
                     className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest"
-                    placeholder="Nome da Empresa *"
+                    placeholder="CNPJ *"
                   />
                 </div>
               )}

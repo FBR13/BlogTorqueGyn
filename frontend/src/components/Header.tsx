@@ -24,20 +24,18 @@ export function Header() {
     ];
 
     return (
-        // A MUDANÇA ESTÁ AQUI: Trocamos bg-black/80 e blur pelo degradê que some no final
-        <header className="w-full sticky top-0 left-0 bg-gradient-to-b from-black via-black/80 to-transparent z-50 transition-all duration-300 pb-4">
-            <div className="container mx-auto flex h-20 md:h-24 items-center justify-between px-6 relative z-10 bg-transparent">
+        <header className="w-full fixed top-0 left-0 bg-gradient-to-b from-black via-black/90 to-transparent z-50 transition-all duration-300 pb-2">
+            {/* ALTURA REDUZIDA AQUI: h-16 md:h-20 */}
+            <div className="container mx-auto flex h-16 md:h-20 items-center justify-between px-6 relative z-10 bg-transparent">
 
-                {/* LOGO */}
                 <Link to="/" className="flex items-center group" onClick={() => setIsMobileMenuOpen(false)}>
                     <img
                         src="/favicon.png"
                         alt="TorqueGyn"
-                        className="h-12 md:h-20 w-auto object-contain transition-transform duration-500 group-hover:scale-105 group-hover:brightness-125"
+                        className="h-10 md:h-20 w-auto object-contain transition-transform duration-500 group-hover:scale-105 group-hover:brightness-125"
                     />
                 </Link>
 
-                {/* MENU DESKTOP */}
                 <nav className="hidden md:flex items-center gap-12">
                     {navLinks.map((link) => (
                         <Link
@@ -52,8 +50,6 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-4 md:gap-6">
-
-                    {/* O ÍCONE FURTIVO (Sempre visível, tanto no PC quanto no Celular) */}
                     {user ? (
                         <Link to="/admin" title="Painel Admin" className="text-neon-cyan/70 hover:text-neon-cyan p-2 transition-all duration-300 group">
                             <LayoutDashboard size={20} strokeWidth={1.5} className="group-hover:scale-110 transition-all duration-300" />
@@ -64,7 +60,6 @@ export function Header() {
                         </Link>
                     )}
 
-                    {/* BOTÃO HAMBURGUER (Só aparece no Mobile) */}
                     <button
                         className="md:hidden text-white hover:text-neon-red transition-colors p-2"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -72,12 +67,11 @@ export function Header() {
                         {isMobileMenuOpen ? <X size={26} strokeWidth={1.5} /> : <Menu size={26} strokeWidth={1.5} />}
                     </button>
                 </div>
-
             </div>
 
+            {/* Fundo preto sólido corrigido para não ter gap no mobile */}
             <div
-                className={`md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-xl border-b border-white/10 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${isMobileMenuOpen ? 'max-h-[300px] opacity-100 py-6' : 'max-h-0 opacity-0 py-0'
-                    }`}
+                className={`md:hidden absolute top-full left-0 w-full bg-black border-b border-white/10 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${isMobileMenuOpen ? 'max-h-[300px] opacity-100 py-6' : 'max-h-0 opacity-0 py-0'}`}
             >
                 <div className="flex flex-col items-center w-full px-8 pb-4">
                     {navLinks.map((link) => (
@@ -85,8 +79,7 @@ export function Header() {
                             key={link.name}
                             to={link.path}
                             onClick={() => setIsMobileMenuOpen(false)}
-                            className={`text-[11px] font-display font-bold tracking-[0.3em] uppercase w-full text-center py-5 border-b border-white/5 ${isActive(link.path) ? 'text-neon-cyan text-glow-cyan' : 'text-gray-400 hover:text-white'
-                                }`}
+                            className={`text-[11px] font-display font-bold tracking-[0.3em] uppercase w-full text-center py-5 border-b border-white/5 ${isActive(link.path) ? 'text-neon-cyan text-glow-cyan' : 'text-gray-400 hover:text-white'}`}
                         >
                             {link.name}
                         </Link>
