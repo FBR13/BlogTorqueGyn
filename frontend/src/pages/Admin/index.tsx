@@ -3,8 +3,20 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
 import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, MessageSquare, Star, Calendar, Phone, Mail } from 'lucide-react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
+import ReactQuill from 'react-quill-new';
 
-const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'Mercedes AMG', 'BMW', 'Volkswagen', 'Audi', 'Chevrolet', 'Ford', 'Nissan', 'Honda', 'Subaru', 'Mitsubishi', 'Mazda', 'Jaguar', 'Land Rover', 'Volvo', 'Tesla', 'McLaren', 'Aston Martin', 'Bugatti', 'Pagani', 'Koenigsegg', 'Alfa Romeo', 'Fiat', 'Renault', 'Peugeot', 'Citroën'];
+// 🚀 CONFIGURAÇÃO DA BARRA DE FERRAMENTAS
+const quillModules = {
+  toolbar: [
+    [{ 'header': [2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    ['link', 'image', 'video'],
+    ['clean']
+  ],
+};
+
+const BRANDS = ['Ferrari', 'Porsche', 'Lamborghini', 'Mercedes-Benz', 'Mercedes AMG', 'BMW', 'Volkswagen', 'Audi', 'Chevrolet', 'Ford', 'Nissan', 'Honda', 'Subaru', 'Mitsubishi', 'Mazda', 'Jaguar', 'Land Rover', 'Volvo', 'Tesla', 'McLaren', 'Aston Martin', 'Bugatti', 'Pagani', 'Koenigsegg', 'Alfa Romeo', 'Fiat', 'Renault', 'Peugeot', 'Citroën', 'Notícias'];
 
 function ImageManager({ item, tab, onUpdate }: { item: any, tab: string, onUpdate: (id: string, newImages: string[]) => void }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -528,7 +540,7 @@ export function Admin() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
                     {currentItems.map(item => (
                       <div key={item.id} className="bg-white/5 border border-white/10 rounded-xl p-6 flex flex-col justify-between hover:border-[#ffaa00]/50 transition-colors group">
-                        
+
                         <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
                           <div>
                             <h3 className="text-xl font-display font-bold text-white group-hover:text-[#ffaa00] transition-colors">{item.name}</h3>
@@ -546,7 +558,7 @@ export function Admin() {
                             <div className="p-2 bg-black rounded-full border border-white/5"><Mail size={12} className="text-gray-400" /></div>
                             <span className="text-sm text-gray-300 truncate">{item.email}</span>
                           </div>
-                          
+
                           {item.document && (
                             <div className="flex items-center gap-3">
                               <div className="p-2 bg-black rounded-full border border-white/5"><FileText size={12} className="text-gray-400" /></div>
@@ -563,16 +575,15 @@ export function Admin() {
                         </div>
 
                         <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/5">
-                          {/* CORREÇÃO DO ERRO DO REPLACE AQUI! */}
-                          <a 
-                            href={`https://wa.me/55${(item.phone || '').replace(/\D/g, '')}`} 
-                            target="_blank" 
+                          <a
+                            href={`https://wa.me/55${(item.phone || '').replace(/\D/g, '')}`}
+                            target="_blank"
                             rel="noreferrer"
                             className="flex-1 flex justify-center items-center gap-2 bg-[#ffaa00]/10 text-[#ffaa00] border border-[#ffaa00]/50 py-3 rounded hover:bg-[#ffaa00] hover:text-black transition-all font-bold text-[9px] tracking-widest uppercase"
                           >
                             <Phone size={12} /> Chamar WhatsApp
                           </a>
-                          
+
                           <button onClick={() => requestDelete(item.id)} className="p-3 text-gray-500 hover:text-neon-red hover:bg-neon-red/10 rounded transition-all border border-transparent hover:border-neon-red/20">
                             <Trash2 size={16} />
                           </button>
@@ -582,7 +593,7 @@ export function Admin() {
                     ))}
                   </div>
                 )}
-                
+
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-3 md:gap-4 my-8 pb-6">
                     <button onClick={() => handlePageChange(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="p-2 border border-white/10 text-white disabled:opacity-20 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_15px_rgba(0,240,255,0.2)] transition-all rounded glass-dark bg-black/60"><ChevronLeft size={14} /></button>
@@ -606,7 +617,7 @@ export function Admin() {
                   </div>
                 ) : (
                   <div className="flex flex-col">
-                    
+
                     {currentItems.map(item => (
                       <div key={item.id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-5 border-b border-white/5 group hover:bg-white/5 transition-colors gap-4">
 
@@ -652,11 +663,10 @@ export function Admin() {
                             <button
                               key={page}
                               onClick={() => handlePageChange(page)}
-                              className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${
-                                currentPage === page
+                              className={`w-8 h-8 flex items-center justify-center text-[10px] font-display font-bold tracking-widest transition-all rounded ${currentPage === page
                                   ? 'bg-neon-cyan text-black shadow-[0_0_15px_rgba(0,240,255,0.4)]'
                                   : 'text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'
-                              }`}
+                                }`}
                             >
                               {page}
                             </button>
@@ -693,7 +703,7 @@ export function Admin() {
                   <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="block w-full pt-4 pb-2 text-xl md:text-2xl font-luxury text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600" placeholder="Título da Obra" />
                 </div>
                 <div className="relative">
-                  <div className="block w-full pt-5 pb-2 text-xs md:text-sm text-white uppercase tracking-widest bg-transparent border-b border-white/20 hover:border-neon-cyan transition-colors cursor-pointer flex justify-between items-center group" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                  <div className="flex w-full pt-5 pb-2 text-xs md:text-sm text-white uppercase tracking-widest bg-transparent border-b border-white/20 hover:border-neon-cyan transition-colors cursor-pointer justify-between items-center group" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                     <span>{formData.brand}</span>
                     <ChevronDown size={16} className={`text-gray-500 group-hover:text-neon-cyan transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-neon-cyan' : ''}`} />
                   </div>
@@ -757,10 +767,21 @@ export function Admin() {
                 <textarea required rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="block w-full pt-4 pb-2 text-sm text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors resize-none placeholder:text-gray-600" placeholder="Breve contexto..." />
               </div>
 
+              {/* 🚀 AQUI ESTÁ O NOVO BLOCO DO REACT QUILL PARA O CORPO DO EDITORIAL */}
               {activeTab === 'posts' && (
                 <div className="relative pt-2">
                   <label className="text-[8px] md:text-[9px] tracking-[0.2em] uppercase text-gray-500 font-bold mb-4 block border-b border-white/10 pb-2">Corpo do Editorial</label>
-                  <textarea required rows={8} value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} className="block w-full p-6 text-sm md:text-base text-gray-300 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-neon-cyan focus:bg-white/10 transition-colors placeholder:text-gray-600" placeholder="Escreva a matéria detalhada..." />
+
+                  <div className="mt-4 quill-dark-theme bg-black/40 rounded-xl">
+                    <ReactQuill
+                      theme="snow"
+                      modules={quillModules}
+                      value={formData.content}
+                      onChange={(content: string) => setFormData({ ...formData, content })}
+                      placeholder="Escreva a matéria detalhada (use as ferramentas acima para formatar e adicionar fotos/vídeos)..."
+                      className="text-white min-h-[300px]"
+                    />
+                  </div>
                 </div>
               )}
 
