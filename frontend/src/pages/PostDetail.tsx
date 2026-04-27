@@ -120,11 +120,14 @@ export function PostDetail() {
         <article className="container mx-auto px-6 pt-12 md:pt-20 max-w-3xl relative z-10">
           <div className="prose prose-invert prose-p:text-gray-300 prose-p:leading-relaxed prose-p:font-light prose-h2:font-display prose-h2:text-3xl prose-h2:text-white prose-h2:mt-12 prose-h3:font-display prose-h3:text-xl prose-h3:text-white prose-a:text-neon-red hover:prose-a:text-white prose-strong:text-white prose-strong:font-bold prose-blockquote:border-neon-red prose-blockquote:bg-white/5 prose-blockquote:p-4 prose-blockquote:not-italic prose-ul:text-gray-300 prose-li:marker:text-neon-red text-justify">
 
-            {/* 🚀 LÓGICA HÍBRIDA AQUI */}
-            {post.content && post.content.includes('<p>') ? (
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            {/* 🚀 LÓGICA HÍBRIDA SANITIZADA */}
+            {post.content && post.content.includes('</') ? (
+              <div 
+                className="w-full max-w-full break-words" 
+                dangerouslySetInnerHTML={{ __html: post.content.replace(/&nbsp;/g, ' ') }} 
+              />
             ) : (
-              <div className="whitespace-pre-wrap">
+              <div className="whitespace-pre-wrap break-words w-full">
                 {post.content?.split('\n').map((paragraph: string, idx: number) => (
                   paragraph.trim() ? <p key={idx}>{paragraph}</p> : <br key={idx} />
                 ))}

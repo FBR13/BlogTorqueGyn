@@ -54,6 +54,14 @@ export function Blog() {
     }
   };
 
+  // 🚀 A MÁGICA DE LIMPEZA DE TEXTO: Remove tags HTML e lixo do Quill (como &nbsp;) para o preview
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
   return (
     <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0">
       <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_30%,#000_20%,transparent_100%)] opacity-60"></div>
@@ -107,9 +115,8 @@ export function Blog() {
                   </div>
                   <h3 className="text-xl font-display text-white group-hover:text-neon-red transition-colors line-clamp-2 mb-3">{post.title}</h3>
 
-                  {/* 🚀 AJUSTE DA DESCRIÇÃO: Limpa etiquetas HTML no preview */}
                   <div className="text-sm text-gray-400 font-light line-clamp-3 mb-6 flex-1">
-                    {post.description ? post.description.replace(/<[^>]+>/g, '') : ''}
+                    {stripHtml(post.description)}
                   </div>
 
                   <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500 mt-auto">
