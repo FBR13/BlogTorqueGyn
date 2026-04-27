@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowRight, Share2 } from 'lucide-react'; // Adicionado Share2
 import { supabase } from '../services/supabase';
 
 interface BlogPost {
@@ -19,7 +19,6 @@ export function Blog() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        // BUSCA DIRETA NO SUPABASE (Ultra rápido, sem Render)
         const { data, error } = await supabase
           .from('posts')
           .select('*')
@@ -36,6 +35,28 @@ export function Blog() {
 
     fetchPosts();
   }, []);
+
+  // FUNÇÃO DE COMPARTILHAMENTO
+  const handleShare = async (e: React.MouseEvent, post: BlogPost) => {
+    e.preventDefault(); // Impede que o clique abra a página da matéria
+    const postUrl = `${window.location.origin}/blog/${post.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `TorqueGyn | ${post.title}`,
+          text: post.description,
+          url: postUrl,
+        });
+      } catch (error) {
+        console.log('Compartilhamento cancelado ou falhou:', error);
+      }
+    } else {
+      // Fallback para PC: Copia o link para a área de transferência
+      navigator.clipboard.writeText(postUrl);
+      alert('Link copiado para a área de transferência!');
+    }
+  };
 
   return (
     <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0">
@@ -70,8 +91,17 @@ export function Blog() {
               <Link 
                 key={post.id} 
                 to={`/blog/${post.id}`}
-                className="group block cursor-pointer glass-dark rounded-xl p-4 hover:border-neon-red/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(239,51,64,0.15)] bg-black/60 flex flex-col h-full"
+                className="group block cursor-pointer glass-dark rounded-xl p-4 hover:border-neon-red/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(239,51,64,0.15)] bg-black/60 flex flex-col h-full relative"
               >
+                {/* BOTÃO DE COMPARTILHAR FLUTUANTE */}
+                <button 
+                  onClick={(e) => handleShare(e, post)}
+                  className="absolute top-6 right-6 z-20 glass-dark p-2 rounded-full bg-black/80 border border-white/10 hover:border-neon-red hover:bg-neon-red/20 transition-all shadow-xl group/btn"
+                  title="Compartilhar"
+                >
+                  <Share2 size={16} className="text-gray-400 group-hover/btn:text-neon-red" />
+                </button>
+
                 <div className="relative overflow-hidden aspect-video md:aspect-[4/5] bg-black mb-6 rounded-lg border border-white/5 shrink-0">
                   {post.image_url ? (
                     <img src={post.image_url} alt={post.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-[1.5s] ease-out" />

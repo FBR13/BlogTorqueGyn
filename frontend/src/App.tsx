@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { supabase } from './services/supabase';
@@ -37,22 +38,17 @@ function AnalyticsTracker() {
 
     recordView();
 
-    // BÔNUS: Sempre que mudar de página, o site rola pro topo automaticamente
     window.scrollTo(0, 0);
   }, [location]);
 
   return null;
 }
 
-// ==========================================
-// BOTÃO VOLTAR AO TOPO (Global)
-// ==========================================
 function ScrollToTopButton() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      // Se a pessoa rolar mais de 300 pixels para baixo, o botão aparece
       if (window.scrollY > 300) {
         setIsVisible(true);
       } else {
@@ -84,9 +80,6 @@ function ScrollToTopButton() {
   );
 }
 
-// ==========================================
-// AVISO DE COOKIES
-// ==========================================
 function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -134,7 +127,6 @@ function CookieBanner() {
   );
 }
 
-// Componente de Loading Global
 const LoadingFallback = () => (
   <div className="min-h-screen bg-black flex items-center justify-center">
     <div className="w-8 h-8 border-2 border-neon-red border-t-transparent rounded-full animate-spin"></div>
@@ -145,9 +137,21 @@ export function App() {
   return (
     <AuthProvider>
       <Router>
+        <Helmet>
+          <title>TorqueGyn | Alta Performance & Cultura Automotiva</title>
+          <meta name="description" content="O epicentro da cultura automotiva, engenharia de alta performance e projetos exclusivos." />
+          
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="TorqueGyn | Alta Performance" />
+          <meta property="og:description" content="O epicentro da cultura automotiva, engenharia de alta performance e projetos exclusivos." />
+          <meta property="og:url" content="https://torquegyn.life" />
+          {/* DICA: Coloque o link de uma logo padrão do seu site abaixo */}
+          <meta property="og:image" content="https://torquegyn.life/logo-default.jpg" />
+        </Helmet>
+
         <AnalyticsTracker />
         <CookieBanner />
-        <ScrollToTopButton /> {/* <-- Nosso botão fixo rolando o site adicionado aqui! */}
+        <ScrollToTopButton />
 
         {/* HEADER NO TOPO */}
         <Header />
@@ -171,7 +175,6 @@ export function App() {
 
         {/* FOOTER NO FINAL DE TUDO */}
         <Footer />
-
       </Router>
     </AuthProvider>
   );

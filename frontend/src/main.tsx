@@ -1,13 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async'; // 1. Importa o provedor do Helmet
 import './index.css';
 import App from './App.tsx';
-import { AuthProvider } from './context/AuthContext.tsx'; // Importe aqui
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
+    <HelmetProvider>
       <App />
-    </AuthProvider>
+    </HelmetProvider>
   </StrictMode>,
 );
