@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabase';
-import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, MessageSquare, Star, Calendar, Phone, Mail, Tag, Download } from 'lucide-react';
+import { LogOut, Plus, Settings, X, Save, Trash2, Edit2, UploadCloud, Image as ImageIcon, FileText, Activity, ChevronDown, ChevronLeft, ChevronRight, Loader2, AlertTriangle, Calendar, Phone, Mail, Tag, Download } from 'lucide-react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from 'recharts';
 import ReactQuill from 'react-quill-new';
 
@@ -155,7 +155,6 @@ export function Admin() {
 
   const [pageViews, setPageViews] = useState<any[]>([]);
   const [portfolioStats, setPortfolioStats] = useState({ totalRatings: 0, average: 0 });
-  const [recentComments, setRecentComments] = useState<any[]>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
@@ -213,9 +212,6 @@ export function Admin() {
       if (ratingsData && ratingsData.length > 0) {
         const sum = ratingsData.reduce((acc, curr) => acc + (curr.rating_value || 0), 0);
         setPortfolioStats({ totalRatings: ratingsData.length, average: (sum / ratingsData.length) });
-
-        const comments = ratingsData.filter(r => r.review_text && r.review_text.trim() !== '');
-        setRecentComments(comments);
       }
     } catch (error) {
       console.error("Erro nas métricas:", error);
@@ -401,16 +397,13 @@ export function Admin() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 🚀 EXTRACTOR À PROVA DE BALAS: Puxa do banco novo ou lê das mensagens antigas do seu teste!
   const extractSafePrice = (item: any) => {
     if (item.final_price !== null && item.final_price !== undefined) return Number(item.final_price);
     if (!item.message) return 0;
 
-    // Tenta formato 1: "Valor Final: R$ 300.00"
     let match = item.message.match(/Valor Final: R\$\s*(\d+(?:\.\d{1,2})?)/);
     if (match) return parseFloat(match[1]);
 
-    // Tenta formato 2 (antigo): "- R$ 300"
     match = item.message.match(/-\s*R\$\s*(\d+(?:\.\d{1,2})?)/);
     if (match) return parseFloat(match[1]);
 
