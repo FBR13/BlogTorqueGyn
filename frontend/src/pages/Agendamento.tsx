@@ -85,7 +85,6 @@ export function Agendamento() {
     const packageMessageContext = `[Pacote Escolhido: ${packageDetails?.name} - Valor Final: R$ ${finalPrice.toFixed(2)}]${couponText}\n` + formData.message;
 
     try {
-      // 🚀 AQUI ESTÁ A CORREÇÃO: ENVIANDO OS VALORES PARA AS COLUNAS FINANCEIRAS DO BANCO!
       await supabase.from('bookings').insert([{
         name: formData.name,
         phone: formData.phone,
@@ -291,36 +290,43 @@ export function Agendamento() {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  {PHOTOGRAPHY_PACKAGES.map(pkg => (
-                    <button
-                      key={pkg.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedPackage(pkg.id);
-                        setAcceptedExtras(false);
-                      }}
-                      className={`text-left p-5 rounded-xl border transition-all duration-300 relative overflow-hidden group ${selectedPackage === pkg.id
-                          ? 'border-neon-cyan bg-neon-cyan/10 shadow-[0_0_20px_rgba(0,240,255,0.15)]'
-                          : 'border-white/10 bg-black/40 hover:border-white/30'
-                        }`}
-                    >
-                      {selectedPackage === pkg.id && <div className="absolute top-0 left-0 w-1.5 h-full bg-neon-cyan"></div>}
+                  {PHOTOGRAPHY_PACKAGES.map(pkg => {
+                    // 🚀 LÓGICA DE EXIBIÇÃO DE VALORES CORRIGIDA AQUI
+                    const currentPkgPrice = couponStatus === 'valid' 
+                      ? pkg.price - (pkg.price * discountPercent / 100) 
+                      : pkg.price;
 
-                      <div className="flex justify-between items-center mb-2">
-                        <span className={`text-xs font-display font-bold uppercase tracking-widest ${selectedPackage === pkg.id ? 'text-neon-cyan' : 'text-gray-400 group-hover:text-gray-300'}`}>
-                          {pkg.name}
-                        </span>
-                        {selectedPackage === pkg.id && <CheckCircle size={16} className="text-neon-cyan" />}
-                      </div>
+                    return (
+                      <button
+                        key={pkg.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedPackage(pkg.id);
+                          setAcceptedExtras(false);
+                        }}
+                        className={`text-left p-5 rounded-xl border transition-all duration-300 relative overflow-hidden group ${selectedPackage === pkg.id
+                            ? 'border-neon-cyan bg-neon-cyan/10 shadow-[0_0_20px_rgba(0,240,255,0.15)]'
+                            : 'border-white/10 bg-black/40 hover:border-white/30'
+                          }`}
+                      >
+                        {selectedPackage === pkg.id && <div className="absolute top-0 left-0 w-1.5 h-full bg-neon-cyan"></div>}
 
-                      <div className="flex items-end gap-3 mt-1">
-                        <span className="text-2xl font-luxury text-white italic block">R$ {pkg.price}</span>
-                        {couponStatus === 'valid' && (
-                          <span className="text-xs font-luxury text-gray-500 italic line-through mb-1">R$ {pkg.price}</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                        <div className="flex justify-between items-center mb-2">
+                          <span className={`text-xs font-display font-bold uppercase tracking-widest ${selectedPackage === pkg.id ? 'text-neon-cyan' : 'text-gray-400 group-hover:text-gray-300'}`}>
+                            {pkg.name}
+                          </span>
+                          {selectedPackage === pkg.id && <CheckCircle size={16} className="text-neon-cyan" />}
+                        </div>
+
+                        <div className="flex items-end gap-3 mt-1">
+                          <span className="text-2xl font-luxury text-white italic block">R$ {currentPkgPrice.toFixed(2)}</span>
+                          {couponStatus === 'valid' && (
+                            <span className="text-xs font-luxury text-gray-500 italic line-through mb-1">R$ {pkg.price.toFixed(2)}</span>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* RESUMO DO PEDIDO E ACEITE */}
