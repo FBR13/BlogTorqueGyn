@@ -20,7 +20,8 @@ export function Header() {
     const navLinks = [
         { name: 'Home', path: '/' },
         { name: 'Portfólio', path: '/portfolio' },
-        { name: 'Blog', path: '/blog' }
+        { name: 'Blog', path: '/blog' },
+        { name: 'Agendar', path: '/agendamento' } // NOVA ROTA ADICIONADA AQUI
     ];
 
     return (
@@ -63,7 +64,7 @@ export function Header() {
                             </Link>
                         )}
 
-                        {/* Botão Hamburger (Abre o Overlay) */}
+                        {/* Botão Hamburger */}
                         <button
                             className="md:hidden text-white hover:text-neon-red transition-colors p-2"
                             onClick={() => setIsMobileMenuOpen(true)}
@@ -74,13 +75,12 @@ export function Header() {
                 </div>
             </header>
 
-            {/* OVERLAY MOBILE NATIVO (FULL SCREEN) */}
+            {/* OVERLAY MOBILE NATIVO */}
             <div
                 className={`md:hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl transition-all duration-500 ease-in-out flex flex-col ${
                     isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
                 }`}
             >
-                {/* Topo do Menu (Espelha o Header original para dar continuidade) */}
                 <div className="flex h-16 items-center justify-between px-6 border-b border-white/10 bg-black">
                     <Link to="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
                         <img src="/favicon.png" alt="TorqueGyn" className="h-10 w-auto object-contain" />
@@ -105,7 +105,6 @@ export function Header() {
                     </div>
                 </div>
 
-                {/* Links Centrais com Animação em Cascata */}
                 <div className="flex flex-col items-center justify-center flex-1 px-8 gap-2">
                     {navLinks.map((link, index) => (
                         <Link

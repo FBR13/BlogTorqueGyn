@@ -14,6 +14,7 @@ const PostDetail = lazy(() => import('./pages/PostDetail').then(module => ({ def
 const Portfolio = lazy(() => import('./pages/Portfolio').then(module => ({ default: module.Portfolio })));
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
 const Admin = lazy(() => import('./pages/Admin').then(module => ({ default: module.Admin })));
+const Agendamento = lazy(() => import('./pages/Agendamento').then(module => ({ default: module.Agendamento })));
 
 function AnalyticsTracker() {
   const location = useLocation();
@@ -145,7 +146,6 @@ export function App() {
           <meta property="og:title" content="TorqueGyn | Alta Performance" />
           <meta property="og:description" content="O epicentro da cultura automotiva, engenharia de alta performance e projetos exclusivos." />
           <meta property="og:url" content="https://torquegyn.life" />
-          {/* DICA: Coloque o link de uma logo padrão do seu site abaixo */}
           <meta property="og:image" content="https://torquegyn.life/logo-default.jpg" />
         </Helmet>
 
@@ -153,10 +153,8 @@ export function App() {
         <CookieBanner />
         <ScrollToTopButton />
 
-        {/* HEADER NO TOPO */}
         <Header />
 
-        {/* CONTEÚDO DAS PÁGINAS */}
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -164,6 +162,7 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:id" element={<PostDetail />} />
+            <Route path="/agendamento" element={<Agendamento />} />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <Admin />
@@ -173,7 +172,6 @@ export function App() {
           </Routes>
         </Suspense>
 
-        {/* FOOTER NO FINAL DE TUDO */}
         <Footer />
       </Router>
     </AuthProvider>
