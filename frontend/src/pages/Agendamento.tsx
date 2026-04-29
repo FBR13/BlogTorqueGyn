@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Send, AlertTriangle, CheckCircle, Clock, Sparkles, MapPin, Camera, Tag, User, Car, Loader2, XCircle } from 'lucide-react';
+import { Send, AlertTriangle, CheckCircle, Clock, Sparkles, MapPin, Camera, Tag, User, Car, Loader2, XCircle, Crosshair } from 'lucide-react';
 import { supabase } from '../services/supabase';
 
 // DADOS DA TABELA DE PREÇOS
@@ -22,11 +22,7 @@ export function Agendamento() {
     const [discountPercent, setDiscountPercent] = useState<number>(0);
 
     const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
-        email: '',
-        cnpj: '',
-        message: ''
+        name: '', phone: '', email: '', cnpj: '', message: ''
     });
 
     const formatCNPJ = (value: string) => {
@@ -127,18 +123,12 @@ export function Agendamento() {
 
         const encodedText = encodeURIComponent(text);
 
-        // 🚀 LÓGICA DE ROTEAMENTO
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         if (isMobile) {
-            // CELULAR: Abre o app nativo
             window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`;
         } else {
-            // COMPUTADOR: Tenta abrir o Desktop App
-            // Se não abrir, o usuário terá que clicar em "WhatsApp Web" manualmente no app se não estiver instalado.
             window.location.href = `whatsapp://send?phone=${WHATSAPP_NUMBER}&text=${encodedText}`;
-
-            // Fallback: se em 2 segundos nada acontecer, abre o WhatsApp Web
             setTimeout(() => {
                 window.open(`https://web.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedText}`, '_blank');
             }, 2000);
@@ -159,99 +149,113 @@ export function Agendamento() {
         <>
             <Helmet>
                 <title>TorqueGyn | Agendamento</title>
-                <meta name="description" content="Agende seu ensaio fotográfico automotivo." />
+                <meta name="description" content="Configure os detalhes do seu projeto visual automotivo." />
             </Helmet>
 
-            <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0">
+            {/* ADICIONADO overflow-x-hidden PARA BLOQUEAR SCROLL HORIZONTAL NO MOBILE */}
+            <div className="bg-black min-h-screen flex flex-col selection:bg-neon-red selection:text-white relative z-0 overflow-x-hidden">
 
-                {/* FUNDOS */}
+                {/* BACKGROUNDS */}
                 <div className="absolute inset-0 z-[-2] bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_30%,#000_20%,transparent_100%)] opacity-60"></div>
-                <div className="absolute top-[10%] -left-[10%] w-[80vw] md:w-[50vw] h-[80vw] md:h-[50vw] bg-neon-red/10 rounded-full blur-[100px] md:blur-[150px] pointer-events-none -z-10 animate-pulse"></div>
+                <div className="absolute top-[10%] -left-[10%] w-[80vw] md:w-[50vw] h-[80vw] md:h-[50vw] bg-neon-red/15 rounded-full blur-[100px] md:blur-[150px] pointer-events-none -z-10 animate-pulse"></div>
                 <div className="absolute top-[40%] -right-[10%] w-[60vw] md:w-[40vw] h-[60vw] md:h-[40vw] bg-neon-cyan/10 rounded-full blur-[100px] md:blur-[150px] pointer-events-none -z-10"></div>
 
-                {/* CABEÇALHO */}
-                <div className="pt-32 md:pt-40 pb-12 md:pb-16 px-6 border-b border-white/10 text-center relative overflow-hidden z-10">
-                    <h1 className="text-4xl md:text-8xl font-display font-bold tracking-tighter text-white">
-                        AGENDAR <span className="font-luxury italic text-gray-500 font-light lowercase">Ensaio</span>
-                    </h1>
-                    <p className="text-gray-400 mt-6 max-w-xl mx-auto text-sm md:text-base font-light tracking-wide">
-                        Preencha os dados abaixo para selecionarmos o melhor formato e darmos início ao seu projeto visual automotivo.
-                    </p>
-                </div>
+                {/* HERO HEADER */}
+                <section className="relative flex flex-col justify-center px-4 md:px-6 pt-32 pb-16 md:pt-40 md:pb-24 border-b border-white/10 overflow-hidden w-full">
+                    <div className="container mx-auto relative z-10 max-w-7xl">
+                        <div className="flex items-center gap-3 md:gap-4 mb-6 md:mb-8 animate-fade-in">
+                            <Crosshair size={14} className="text-neon-red animate-spin-slow md:w-4 md:h-4" />
+                            <span className="text-[9px] md:text-[10px] tracking-[0.4em] font-display font-bold uppercase text-neon-red text-glow-red">
+                                Setup de Projeto
+                            </span>
+                        </div>
 
-                {/* CONTEÚDO PRINCIPAL (GRID DIVIDIDO) */}
-                <div className="container mx-auto px-6 py-16 md:py-24 z-10 relative max-w-7xl">
-                    <form onSubmit={handleWhatsAppSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+                        <h1 className="text-4xl sm:text-5xl md:text-[90px] leading-[1.1] text-white mb-4 md:mb-8 animate-slide-up break-words">
+                            <span className="font-display font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-600 uppercase block text-shadow-xl">
+                                AGENDAMENTO
+                            </span>
+                            <span className="font-luxury italic text-gray-400 font-light block transform -translate-y-1 md:-translate-y-2 mt-1 md:mt-0">
+                                Automotivo
+                            </span>
+                        </h1>
+
+                        <p className="text-xs sm:text-sm md:text-lg text-gray-400 max-w-xl leading-relaxed font-light animate-slide-up border-l-2 border-neon-red pl-4 md:pl-6 mt-4 md:mt-0" style={{ animationDelay: '0.2s' }}>
+                            Configure os detalhes abaixo para selecionarmos o melhor formato e darmos início ao registro da sua máquina.
+                        </p>
+                    </div>
+                </section>
+
+                {/* CONTEÚDO PRINCIPAL (FORMULÁRIO) */}
+                <div className="container mx-auto px-4 md:px-6 py-12 md:py-24 z-10 relative max-w-7xl w-full">
+                    <form onSubmit={handleWhatsAppSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
 
                         {/* COLUNA ESQUERDA: DADOS E PROJETO */}
-                        <div className="lg:col-span-7 flex flex-col gap-12 md:gap-16">
+                        <div className="lg:col-span-7 flex flex-col gap-8 md:gap-12 w-full">
 
                             {/* BLOCO 01: DADOS */}
-                            <div className="bg-[#050505]/80 border border-white/5 p-8 md:p-10 rounded-2xl relative overflow-hidden shadow-2xl">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-neon-cyan/50"></div>
-                                <div className="flex items-center gap-3 mb-10 border-b border-white/10 pb-6">
-                                    <span className="text-neon-cyan font-display font-bold text-xs tracking-widest">01.</span>
-                                    <h3 className="text-white font-luxury tracking-widest uppercase text-xl flex items-center gap-3">
-                                        <User size={20} className="text-gray-500" /> Dados Pessoais
+                            <div className="bg-black/60 backdrop-blur-md border border-white/5 p-6 md:p-10 rounded-xl relative shadow-[0_8px_30px_rgb(0,0,0,0.5)] w-full">
+                                <div className="flex items-center gap-3 mb-8 md:mb-10 border-b border-white/10 pb-4 md:pb-6">
+                                    <span className="text-neon-cyan font-display font-bold text-[9px] md:text-[10px] tracking-[0.3em]">01.</span>
+                                    <h3 className="text-white font-luxury tracking-widest uppercase text-lg md:text-xl flex items-center gap-2 md:gap-3">
+                                        <User size={16} className="text-gray-500 md:w-5 md:h-5" /> Dados Pessoais
                                     </h3>
                                 </div>
 
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     <div className="relative">
                                         <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="block w-full pt-2 pb-4 text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="Nome Completo *" />
+                                            className="block w-full pt-2 pb-3 md:pb-4 text-sm md:text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="Nome Completo *" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                                         <div className="relative">
                                             <input type="tel" required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })} maxLength={15}
-                                                className="block w-full pt-2 pb-4 text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="Seu WhatsApp *" />
+                                                className="block w-full pt-2 pb-3 md:pb-4 text-sm md:text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="Seu WhatsApp *" />
                                         </div>
                                         <div className="relative">
                                             <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                className="block w-full pt-2 pb-4 text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="E-mail *" />
+                                                className="block w-full pt-2 pb-3 md:pb-4 text-sm md:text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="E-mail *" />
                                         </div>
                                     </div>
 
-                                    <div className="pt-2">
-                                        <div className="flex gap-4">
+                                    <div className="pt-2 w-full">
+                                        <div className="flex flex-row gap-2 md:gap-4 w-full">
                                             <button type="button" onClick={() => setDocType('CPF')}
-                                                className={`flex-1 py-3 text-xs tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CPF' ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan' : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'}`}>Pessoa Física</button>
+                                                className={`flex-1 py-3 md:py-4 text-[9px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] uppercase font-bold rounded-lg transition-all border ${docType === 'CPF' ? 'border-neon-cyan bg-neon-cyan/5 text-neon-cyan' : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'}`}>Pessoa Física</button>
                                             <button type="button" onClick={() => setDocType('CNPJ')}
-                                                className={`flex-1 py-3 text-xs tracking-[0.2em] uppercase font-bold rounded transition-all border ${docType === 'CNPJ' ? 'border-neon-cyan bg-neon-cyan/10 text-neon-cyan' : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'}`}>Pessoa Jurídica</button>
+                                                className={`flex-1 py-3 md:py-4 text-[9px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] uppercase font-bold rounded-lg transition-all border ${docType === 'CNPJ' ? 'border-neon-cyan bg-neon-cyan/5 text-neon-cyan' : 'border-white/10 text-gray-500 hover:bg-white/5 hover:text-white'}`}>Pessoa Jurídica</button>
                                         </div>
                                     </div>
 
                                     {docType === 'CNPJ' && (
                                         <div className="relative animate-fade-in pt-2">
                                             <input type="text" required value={formData.cnpj} onChange={(e) => setFormData({ ...formData, cnpj: formatCNPJ(e.target.value) })} maxLength={18}
-                                                className="block w-full pt-2 pb-4 text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="CNPJ *" />
+                                                className="block w-full pt-2 pb-3 md:pb-4 text-sm md:text-base text-white bg-transparent border-b border-white/20 focus:outline-none focus:border-neon-cyan transition-colors placeholder:text-gray-600 placeholder:uppercase placeholder:tracking-widest" placeholder="CNPJ *" />
                                         </div>
                                     )}
                                 </div>
                             </div>
 
                             {/* BLOCO 02: PROJETO E CUPOM */}
-                            <div className="bg-[#050505]/80 border border-white/5 p-8 md:p-10 rounded-2xl relative overflow-hidden shadow-2xl">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-neon-cyan/50"></div>
-                                <div className="flex items-center gap-3 mb-10 border-b border-white/10 pb-6">
-                                    <span className="text-neon-cyan font-display font-bold text-xs tracking-widest">02.</span>
-                                    <h3 className="text-white font-luxury tracking-widest uppercase text-xl flex items-center gap-3">
-                                        <Car size={20} className="text-gray-500" /> O Projeto
+                            <div className="bg-black/60 backdrop-blur-md border border-white/5 p-6 md:p-10 rounded-xl relative shadow-[0_8px_30px_rgb(0,0,0,0.5)] w-full">
+                                <div className="flex items-center gap-3 mb-8 md:mb-10 border-b border-white/10 pb-4 md:pb-6">
+                                    <span className="text-neon-cyan font-display font-bold text-[9px] md:text-[10px] tracking-[0.3em]">02.</span>
+                                    <h3 className="text-white font-luxury tracking-widest uppercase text-lg md:text-xl flex items-center gap-2 md:gap-3">
+                                        <Car size={16} className="text-gray-500 md:w-5 md:h-5" /> O Projeto
                                     </h3>
                                 </div>
 
-                                <div className="space-y-8">
-                                    <textarea required rows={5} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        className="block w-full p-6 text-base text-gray-300 bg-black border border-white/10 rounded-xl focus:outline-none focus:border-neon-cyan focus:bg-white/5 transition-colors placeholder:text-gray-600 resize-none"
+                                <div className="space-y-6 md:space-y-8">
+                                    <textarea required rows={4} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                        className="block w-full p-4 md:p-6 text-sm md:text-base text-gray-300 bg-[#050505] border border-white/10 rounded-xl focus:outline-none focus:border-neon-cyan focus:bg-white/5 transition-colors placeholder:text-gray-600 resize-none"
                                         placeholder="Fale um pouco sobre o veículo (marca, modelo) e qual a sua ideia para as fotos... *" />
 
-                                    <div className="relative pt-4 p-6 border border-white/10 rounded-xl bg-black/40">
-                                        <label className="text-[10px] tracking-[0.2em] uppercase text-gray-500 font-bold mb-4 block flex items-center gap-2">
-                                            <Tag size={14} className="text-neon-cyan" /> Cupom Promocional
+                                    <div className="relative pt-2 md:pt-4 p-4 md:p-6 border border-white/10 rounded-xl bg-[#050505] w-full">
+                                        <label className="text-[9px] md:text-[10px] tracking-[0.2em] uppercase text-gray-500 font-bold mb-3 md:mb-4 block flex items-center gap-2">
+                                            <Tag size={12} className="text-neon-cyan md:w-3.5 md:h-3.5" /> Cupom Promocional
                                         </label>
-                                        <div className="flex flex-col sm:flex-row items-center gap-4">
-                                            <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border w-full transition-colors ${couponStatus === 'valid' ? 'border-neon-cyan bg-neon-cyan/5 text-neon-cyan' : couponStatus === 'invalid' ? 'border-neon-red bg-neon-red/5 text-neon-red' : 'border-white/20 bg-transparent text-white focus-within:border-white'}`}>
+                                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 w-full">
+                                            <div className={`flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5 md:py-3 rounded-lg border w-full transition-colors ${couponStatus === 'valid' ? 'border-neon-cyan bg-neon-cyan/5 text-neon-cyan' : couponStatus === 'invalid' ? 'border-neon-red bg-neon-red/5 text-neon-red' : 'border-white/10 bg-transparent text-white focus-within:border-white/30'}`}>
                                                 <input
                                                     type="text"
                                                     value={couponInput}
@@ -260,43 +264,42 @@ export function Agendamento() {
                                                         setCouponStatus('idle');
                                                         setDiscountPercent(0);
                                                     }}
-                                                    className="block w-full text-sm bg-transparent focus:outline-none placeholder:text-gray-600 tracking-widest"
+                                                    className="block w-full text-xs md:text-sm bg-transparent focus:outline-none placeholder:text-gray-600 tracking-widest"
                                                     placeholder="CÓDIGO (OPCIONAL)"
                                                 />
-                                                {couponStatus === 'valid' && <CheckCircle size={18} className="text-neon-cyan animate-fade-in" />}
-                                                {couponStatus === 'invalid' && <XCircle size={18} className="text-neon-red animate-fade-in" />}
+                                                {couponStatus === 'valid' && <CheckCircle size={16} className="text-neon-cyan animate-fade-in md:w-[18px] md:h-[18px]" />}
+                                                {couponStatus === 'invalid' && <XCircle size={16} className="text-neon-red animate-fade-in md:w-[18px] md:h-[18px]" />}
                                             </div>
 
                                             <button
                                                 type="button"
                                                 onClick={validateCoupon}
                                                 disabled={!couponInput || couponStatus === 'loading'}
-                                                className="px-8 py-3 border border-white/20 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-all disabled:opacity-50 w-full sm:w-auto shrink-0 flex items-center justify-center gap-2"
+                                                className="px-6 md:px-8 py-3 md:py-3.5 border border-white/10 bg-white/5 text-white rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/30 transition-all disabled:opacity-50 w-full sm:w-auto flex items-center justify-center gap-2"
                                             >
-                                                {couponStatus === 'loading' ? <Loader2 size={16} className="animate-spin" /> : 'Aplicar'}
+                                                {couponStatus === 'loading' ? <Loader2 size={14} className="animate-spin md:w-4 md:h-4" /> : 'Aplicar'}
                                             </button>
                                         </div>
-                                        {couponStatus === 'valid' && <span className="text-[10px] text-neon-cyan tracking-widest uppercase mt-3 block animate-fade-in">Cupom de {discountPercent}% aplicado com sucesso!</span>}
-                                        {couponStatus === 'invalid' && <span className="text-[10px] text-neon-red tracking-widest uppercase mt-3 block animate-fade-in">Cupom inválido ou expirado.</span>}
+                                        {couponStatus === 'valid' && <span className="text-[9px] md:text-[10px] text-neon-cyan tracking-widest uppercase mt-3 block animate-fade-in">Cupom de {discountPercent}% aplicado com sucesso!</span>}
+                                        {couponStatus === 'invalid' && <span className="text-[9px] md:text-[10px] text-neon-red tracking-widest uppercase mt-3 block animate-fade-in">Cupom inválido ou expirado.</span>}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* COLUNA DIREITA: PACOTE E CONFIRMAÇÃO (STICKY) */}
-                        <div className="lg:col-span-5 flex flex-col gap-6 sticky top-24">
+                        <div className="lg:col-span-5 flex flex-col gap-6 sticky top-20 md:top-28 w-full">
 
-                            <div className="glass-dark bg-black/60 border border-white/10 p-8 rounded-2xl shadow-2xl">
-                                <div className="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
-                                    <span className="text-neon-cyan font-display font-bold text-xs tracking-widest">03.</span>
-                                    <h3 className="text-white font-luxury tracking-widest uppercase text-xl flex items-center gap-3">
-                                        <Camera size={20} className="text-gray-500" /> Pacote
+                            <div className="bg-black/60 backdrop-blur-md border border-white/5 p-6 md:p-8 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.5)] w-full">
+                                <div className="flex items-center gap-3 mb-6 md:mb-8 border-b border-white/10 pb-4 md:pb-6">
+                                    <span className="text-neon-cyan font-display font-bold text-[9px] md:text-[10px] tracking-[0.3em]">03.</span>
+                                    <h3 className="text-white font-luxury tracking-widest uppercase text-lg md:text-xl flex items-center gap-2 md:gap-3">
+                                        <Camera size={16} className="text-gray-500 md:w-5 md:h-5" /> Pacote
                                     </h3>
                                 </div>
 
-                                <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-3 md:gap-4 w-full">
                                     {PHOTOGRAPHY_PACKAGES.map(pkg => {
-                                        // 🚀 LÓGICA DE EXIBIÇÃO DE VALORES CORRIGIDA AQUI
                                         const currentPkgPrice = couponStatus === 'valid'
                                             ? pkg.price - (pkg.price * discountPercent / 100)
                                             : pkg.price;
@@ -309,24 +312,24 @@ export function Agendamento() {
                                                     setSelectedPackage(pkg.id);
                                                     setAcceptedExtras(false);
                                                 }}
-                                                className={`text-left p-5 rounded-xl border transition-all duration-300 relative overflow-hidden group ${selectedPackage === pkg.id
-                                                    ? 'border-neon-cyan bg-neon-cyan/10 shadow-[0_0_20px_rgba(0,240,255,0.15)]'
-                                                    : 'border-white/10 bg-black/40 hover:border-white/30'
+                                                className={`text-left p-4 md:p-6 rounded-xl border transition-all duration-300 relative overflow-hidden group w-full ${selectedPackage === pkg.id
+                                                    ? 'border-neon-cyan bg-neon-cyan/5 shadow-[0_0_20px_rgba(0,240,255,0.1)]'
+                                                    : 'border-white/10 bg-[#050505] hover:border-white/30'
                                                     }`}
                                             >
-                                                {selectedPackage === pkg.id && <div className="absolute top-0 left-0 w-1.5 h-full bg-neon-cyan"></div>}
+                                                {selectedPackage === pkg.id && <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-neon-cyan"></div>}
 
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className={`text-xs font-display font-bold uppercase tracking-widest ${selectedPackage === pkg.id ? 'text-neon-cyan' : 'text-gray-400 group-hover:text-gray-300'}`}>
+                                                <div className="flex justify-between items-center mb-1 md:mb-2">
+                                                    <span className={`text-[9px] md:text-[10px] font-display font-bold uppercase tracking-[0.2em] ${selectedPackage === pkg.id ? 'text-neon-cyan' : 'text-gray-400 group-hover:text-gray-300'}`}>
                                                         {pkg.name}
                                                     </span>
-                                                    {selectedPackage === pkg.id && <CheckCircle size={16} className="text-neon-cyan" />}
+                                                    {selectedPackage === pkg.id && <CheckCircle size={14} className="text-neon-cyan md:w-4 md:h-4" />}
                                                 </div>
 
-                                                <div className="flex items-end gap-3 mt-1">
-                                                    <span className="text-2xl font-luxury text-white italic block">R$ {currentPkgPrice.toFixed(2)}</span>
+                                                <div className="flex items-end gap-2 md:gap-3 mt-1 md:mt-2">
+                                                    <span className="text-xl md:text-2xl font-luxury text-white italic block">R$ {currentPkgPrice.toFixed(2)}</span>
                                                     {couponStatus === 'valid' && (
-                                                        <span className="text-xs font-luxury text-gray-500 italic line-through mb-1">R$ {pkg.price.toFixed(2)}</span>
+                                                        <span className="text-[10px] md:text-xs font-luxury text-gray-600 italic line-through mb-0.5 md:mb-1">R$ {pkg.price.toFixed(2)}</span>
                                                     )}
                                                 </div>
                                             </button>
@@ -336,45 +339,45 @@ export function Agendamento() {
 
                                 {/* RESUMO DO PEDIDO E ACEITE */}
                                 {selectedPackage && (
-                                    <div className="mt-6 border-t border-white/10 pt-6 animate-slide-up">
-                                        <div className="bg-black/50 p-5 rounded-xl border border-white/5 mb-6">
-                                            <h4 className="text-white font-display text-[10px] uppercase tracking-[0.2em] font-bold mb-4">Resumo: {selectedPackageDetails?.name}</h4>
+                                    <div className="mt-6 md:mt-8 border-t border-white/10 pt-6 md:pt-8 animate-slide-up w-full">
+                                        <div className="bg-[#050505] p-4 md:p-6 rounded-xl border border-white/5 mb-5 md:mb-6 w-full">
+                                            <h4 className="text-white font-display text-[8px] md:text-[9px] uppercase tracking-[0.3em] font-bold mb-4 md:mb-5 text-gray-400">Resumo: {selectedPackageDetails?.name}</h4>
 
-                                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                                <span className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                    <Clock size={12} className="text-neon-cyan/70" /> {selectedPackageDetails?.duration}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-5 md:mb-6">
+                                                <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest break-words">
+                                                    <Clock size={12} className="text-neon-cyan/70 shrink-0" /> {selectedPackageDetails?.duration}
                                                 </span>
-                                                <span className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                    <Camera size={12} className="text-neon-cyan/70" /> {selectedPackageDetails?.photos}
+                                                <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest break-words">
+                                                    <Camera size={12} className="text-neon-cyan/70 shrink-0" /> {selectedPackageDetails?.photos}
                                                 </span>
-                                                <span className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                    <Sparkles size={12} className="text-neon-cyan/70" /> {selectedPackageDetails?.edit}
+                                                <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest break-words">
+                                                    <Sparkles size={12} className="text-neon-cyan/70 shrink-0" /> {selectedPackageDetails?.edit}
                                                 </span>
-                                                <span className="flex items-center gap-2 text-[10px] text-gray-400">
-                                                    <MapPin size={12} className="text-neon-cyan/70" /> {selectedPackageDetails?.extras}
+                                                <span className="flex items-center gap-2 text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest break-words">
+                                                    <MapPin size={12} className="text-neon-cyan/70 shrink-0" /> {selectedPackageDetails?.extras}
                                                 </span>
                                             </div>
 
-                                            <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                                                <span className="text-[10px] text-gray-500 tracking-widest uppercase">Valor Final</span>
-                                                <span className="text-xl font-luxury text-neon-cyan italic">R$ {calculatedPrice.toFixed(2)}</span>
+                                            <div className="pt-3 md:pt-4 border-t border-white/5 flex justify-between items-center w-full">
+                                                <span className="text-[9px] md:text-[10px] text-gray-500 tracking-[0.2em] uppercase">Valor Final</span>
+                                                <span className="text-lg md:text-2xl font-luxury text-white italic">R$ {calculatedPrice.toFixed(2)}</span>
                                             </div>
                                         </div>
 
-                                        <label className="flex items-start gap-4 cursor-pointer group">
-                                            <div className="relative flex items-center justify-center mt-1 shrink-0">
+                                        <label className="flex items-start gap-3 md:gap-4 cursor-pointer group w-full">
+                                            <div className="relative flex items-center justify-center mt-0.5 md:mt-1 shrink-0">
                                                 <input
                                                     type="checkbox"
                                                     checked={acceptedExtras}
                                                     onChange={(e) => setAcceptedExtras(e.target.checked)}
-                                                    className="peer appearance-none w-5 h-5 border border-white/20 rounded-sm bg-black/50 checked:bg-neon-red checked:border-neon-red transition-all cursor-pointer hover:border-neon-red"
+                                                    className="peer appearance-none w-4 h-4 md:w-5 md:h-5 border border-white/20 rounded bg-black/50 checked:bg-neon-cyan checked:border-neon-cyan transition-all cursor-pointer hover:border-neon-cyan"
                                                 />
-                                                <svg className="absolute w-3 h-3 text-black pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                                <svg className="absolute w-2.5 h-2.5 md:w-3 md:h-3 text-black pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                     <polyline points="20 6 9 17 4 12"></polyline>
                                                 </svg>
                                             </div>
-                                            <span className="text-[11px] text-gray-400 leading-relaxed select-none group-hover:text-gray-300 transition-colors">
-                                                <strong className="text-white flex items-center gap-1.5 mb-1"><AlertTriangle size={12} className="text-neon-red" /> Termo de Responsabilidade</strong>
+                                            <span className="text-[9px] md:text-[10px] text-gray-400 leading-relaxed select-none group-hover:text-gray-300 transition-colors uppercase tracking-widest">
+                                                <strong className="text-white flex items-center gap-1.5 md:gap-2 mb-1.5 md:mb-2"><AlertTriangle size={10} className="text-neon-cyan md:w-3 md:h-3" /> Termo de Responsabilidade</strong>
                                                 Estou ciente que fotos além da cota custam <strong className="text-white">R$ {selectedPackageDetails?.extraPhotoPrice},00/cada</strong>. Ausência ou cancelamento no dia do ensaio gera taxa de <strong className="text-white">R$ 25,00</strong>.
                                             </span>
                                         </label>
@@ -382,20 +385,20 @@ export function Agendamento() {
                                 )}
                             </div>
 
-                            {/* BOTÃO FINAL CHECKOUT */}
+                            {/* BOTÃO FINAL CHECKOUT - ESTILO TORQUE */}
                             <button
                                 type="submit"
                                 disabled={!selectedPackage || !acceptedExtras}
-                                className="w-full flex items-center justify-between bg-neon-cyan text-black px-8 py-6 hover:bg-[#00d5e6] transition-all duration-300 rounded-xl font-bold shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:bg-neon-cyan"
+                                className="w-full flex items-center justify-center md:justify-between bg-transparent border border-white/20 text-white px-6 md:px-8 py-5 md:py-6 hover:border-neon-cyan hover:text-neon-cyan hover:shadow-[0_0_20px_rgba(0,240,255,0.2)] transition-all duration-500 rounded-xl group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:bg-transparent disabled:hover:border-white/20 disabled:hover:text-white"
                             >
-                                <span className="text-[11px] tracking-[0.2em] uppercase">
+                                <span className="text-[9px] md:text-[10px] font-bold tracking-[0.2em] md:tracking-[0.3em] uppercase">
                                     {!selectedPackage
                                         ? 'Selecione um Pacote'
                                         : !acceptedExtras
                                             ? 'Aceite os Termos'
-                                            : 'Finalizar no WhatsApp'}
+                                            : 'Agendar via WhatsApp'}
                                 </span>
-                                <Send size={18} className={`transition-transform ${selectedPackage && acceptedExtras ? 'group-hover:translate-x-2 group-hover:-translate-y-1' : ''}`} />
+                                {selectedPackage && acceptedExtras && <Send size={14} className="hidden md:block group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform md:w-4 md:h-4" />}
                             </button>
 
                         </div>
